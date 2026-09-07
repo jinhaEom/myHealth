@@ -1,22 +1,31 @@
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+// NativeWind 스타일 로드 — 앱 전체에서 딱 한 번, 진입점에서 import 한다
+import '@/global.css';
+
+import { Colors } from '@/constants/colors';
+import { useWorkoutStore } from '@/store/useWorkoutStore';
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 
 export default function RootLayout() {
+  const loadAll = useWorkoutStore((s) => s.loadAll);
+
+  useEffect(() => {
+    loadAll();
+  }, [loadAll]);
+
   return (
-    <NativeTabs>
-      <NativeTabs.Trigger name="home">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="house.fill" md="home" />
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="calendar">
-        <NativeTabs.Trigger.Label>Calendar</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="calendar" md="calendar_month" />
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="settings">
-        <NativeTabs.Trigger.Label>Settings</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="gearshape.fill" md="settings" />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+    <>
+      <StatusBar style="light" />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: Colors.bg },
+        }}
+      >
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="record" options={{ presentation: 'modal' }} />
+      </Stack>
+    </>
   );
 }
-
-
