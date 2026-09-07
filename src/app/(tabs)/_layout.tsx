@@ -45,8 +45,6 @@ function AndroidTabs() {
         tabBarLabelStyle: { fontSize: 12 },
       }}
     >
-      {/* index는 /home으로 리다이렉트만 하므로 탭에서 숨김 */}
-      <Tabs.Screen name="index" options={{ href: null }} />
       <Tabs.Screen
         name="home"
         options={{

@@ -1,5 +1,6 @@
 import { Chip } from '@/components/Chip';
 import { ScaleSelector } from '@/components/ScaleSelector';
+import { Colors } from '@/constants/colors';
 import {
   CONDITION_EMOJI,
   CONDITION_LABELS,
@@ -9,7 +10,6 @@ import {
   DURATION_STEP,
   INTENSITY_LABELS,
 } from '@/constants/recovery';
-import { Colors } from '@/constants/colors';
 import { formatKorean, todayStr } from '@/lib/date';
 import { useWorkoutStore } from '@/store/useWorkoutStore';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,7 +29,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-/** 기록 화면 — 칩 탭 + 슬라이더 + 이모지, 텍스트 입력 없이 5초 기록 (기획서 5-2) */
 export default function RecordScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();

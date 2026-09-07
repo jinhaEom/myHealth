@@ -19,6 +19,7 @@ export default function SettingScreen() {
     setEditingId,
     editName,
     setEditName,
+    logout
   } = useSettings()
 
   const onAdd = () => {
@@ -120,11 +121,15 @@ export default function SettingScreen() {
         <Text className="mb-[8px] mt-[24px] text-[13px] text-sub">계정</Text>
         <View className="rounded-[16px] bg-card p-[16px]">
           <View className="flex-row items-center justify-between">
-            <Text className="text-[15px] text-dim">로그인</Text>
+            <Text className="text-[15px] text-dim">로그인 계정</Text>
             <Text className="text-[13px] text-sub">구글 · Apple TODO</Text>
           </View>
         </View>
-
+        <View className="rounded-[16px] bg-card p-[16px] mt-[12px]">
+          <Pressable onPress={logout} className="flex-row items-center justify-between ">
+            <Text className="text-[15px] text-dim">로그아웃</Text>
+          </Pressable>
+        </View>
         {/* ── 앱 정보 ── */}
         <Text className="mb-[8px] mt-[24px] text-[13px] text-sub">앱 정보</Text>
         <View className="rounded-[16px] bg-card p-[16px]">
