@@ -1,3 +1,4 @@
+import { getDb, setSyncOwner, wipeLocalData } from '@/lib/db';
 import { supabase } from '@/lib/supabase';
 import type { Session, User } from '@supabase/supabase-js';
 import { create } from 'zustand';
@@ -32,5 +33,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   logout: async () => {
     await supabase.auth.signOut();
+    wipeLocalData(getDb());
+    setSyncOwner(null);
   },
 }));

@@ -48,7 +48,44 @@ function migrate(db: SQLiteDatabase) {
       body_part_id TEXT NOT NULL,
       PRIMARY KEY (log_id, body_part_id)
     );
+
+    -- 이 로컬 캐시가 현재 어느 Supabase 계정 소유인지 기록한다.
+    -- 계정이 바뀌면(다른 user_id) sync.ts가 이 표를 보고 로컬 데이터를 지운 뒤 다시 받는다.
+    CREATE TABLE IF NOT EXISTS sync_owner (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      user_id TEXT
+    );
+
+    -- 주간 운동 횟수 목표. 기기 로컬 전용(서버 동기화 안 함) — 로그아웃하면 사라지는 게 의도된 동작이다.
+    -- 단일 사용자 설정이라 싱글턴(id=1) 행 하나만 둔다.
+    -- recurring=0이면 week_start가 속한 주에만 유효 — 주가 지나면 목표 없음으로 취급한다.
+    CREATE TABLE IF NOT EXISTS goals (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      target_count INTEGER NOT NULL,
+      recurring INTEGER NOT NULL DEFAULT 0,
+      week_start TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
   `);
+}
+
+export function getSyncOwner(): string | null {
+  const row = getDb().getFirstSync<{ user_id: string | null }>('SELECT user_id FROM sync_owner WHERE id = 1');
+  return row?.user_id ?? null;
+}
+
+export function setSyncOwner(userId: string | null) {
+  getDb().runSync(
+    'INSERT INTO sync_owner (id, user_id) VALUES (1, ?) ON CONFLICT (id) DO UPDATE SET user_id = excluded.user_id',
+    userId,
+  );
+}
+
+/** 계정 전환·로그아웃 시 이전 계정의 흔적을 지운다 (기본 부위 재시딩은 호출부 책임) */
+export function wipeLocalData(db: SQLiteDatabase) {
+  db.withTransactionSync(() => {
+    db.execSync('DELETE FROM workout_log_parts; DELETE FROM workout_logs; DELETE FROM body_parts; DELETE FROM goals;');
+  });
 }
 
 /** 최초 실행 시 기본 부위 7개 */

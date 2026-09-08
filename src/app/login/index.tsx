@@ -1,3 +1,4 @@
+import GlowIcon from '@/components/GlowIcon';
 import { SocialAuthButtons } from '@/components/SocialAuthButtons';
 import { Colors } from '@/constants/colors';
 import { supabase } from '@/lib/supabase';
@@ -16,7 +17,7 @@ import {
     View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
+import Toast from 'react-native-simple-toast';
 export default function LoginScreen() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
@@ -42,6 +43,7 @@ export default function LoginScreen() {
                 Alert.alert('로그인 실패', error.message);
                 return;
             }
+            Toast.show("로그인 되었습니다.", Toast.SHORT)
             router.replace('/home');
         } finally {
             setSubmitting(false);
@@ -60,11 +62,9 @@ export default function LoginScreen() {
                 showsVerticalScrollIndicator={false}
             >
                 <View className="mb-[36px] items-center">
-                    <View className="mb-[16px] h-[64px] w-[64px] items-center justify-center rounded-[20px] bg-accent">
-                        <Ionicons name="fitness" size={30} color={Colors.onAccent} />
-                    </View>
-                    <Text className="text-[26px] font-semibold text-fg">만나서 반가워요</Text>
-                    <Text className="mt-[6px] text-[14px] text-sub">myHealth로 오늘의 기록을 이어가요</Text>
+                    <GlowIcon />
+                    <Text className="text-[26px] font-semibold text-fg">My Health</Text>
+                    <Text className="mt-[6px] text-[14px] text-sub">매일매일 운동기록하는 습관을 길러봐요</Text>
                 </View>
 
                 <View className="gap-[12px]">

@@ -1,11 +1,12 @@
+import { AlertModal } from '@/components/AlertModal';
 import { Chip } from '@/components/Chip';
 import { CONDITION_EMOJI, INTENSITY_LABELS } from '@/constants/recovery';
 import { formatDuration, formatKorean, todayStr } from '@/lib/date';
 import type { WorkoutLog } from '@/lib/types';
 import { useWorkoutStore } from '@/store/useWorkoutStore';
 import { useRouter } from 'expo-router';
-import { Alert, Pressable, Text, View } from 'react-native';
-
+import { useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
 /** 날짜 탭 시 상세  */
 
 
@@ -14,15 +15,9 @@ export default function DayDetail({ date, log }: { date: string; log: WorkoutLog
   const today = todayStr();
   const parts = useWorkoutStore((s) => s.parts);
   const removeLog = useWorkoutStore((s) => s.removeLog);
+  const [confirmVisible, setConfirmVisible] = useState(false);
 
   const goRecord = () => router.push({ pathname: '/record', params: { date } });
-
-  const onDelete = () => {
-    Alert.alert('기록 삭제', `${formatKorean(date)} 기록을 삭제할까요?`, [
-      { text: '취소', style: 'cancel' },
-      { text: '삭제', style: 'destructive', onPress: () => removeLog(date) },
-    ]);
-  };
 
   return (
     <View className="mt-[16px] rounded-[16px] bg-card p-[16px]">
@@ -55,12 +50,25 @@ export default function DayDetail({ date, log }: { date: string; log: WorkoutLog
             <Pressable onPress={goRecord} hitSlop={8}>
               <Text className="text-[14px] font-medium text-fg">수정</Text>
             </Pressable>
-            <Pressable onPress={onDelete} hitSlop={8}>
+            <Pressable onPress={() => setConfirmVisible(true)} hitSlop={8}>
               <Text className="text-[14px] text-danger">삭제</Text>
             </Pressable>
           </View>
         </>
       )}
+      <AlertModal
+        visible={confirmVisible}
+        title="기록 삭제"
+        contents="기록을 삭제하시겠습니까?"
+        okLabel="삭제"
+        cancelLabel="취소"
+        danger
+        onOk={() => {
+          setConfirmVisible(false);
+          removeLog(date);
+        }}
+        onCancel={() => setConfirmVisible(false)}
+      />
     </View>
   );
 }

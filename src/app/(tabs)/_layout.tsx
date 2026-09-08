@@ -1,15 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { Platform } from 'react-native';
 import { Colors } from '@/constants/colors';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function TabsLayout() {
-  // Android는 기본 JS 탭바를 다크로 커스텀, iOS는 네이티브 탭바(리퀴드 글래스) 유지
+
+  const hydrated = useAuthStore((s) => s.hydrated);
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
+  if (hydrated && !isLoggedIn) return <Redirect href="/login" />;
+
   return Platform.OS === 'android' ? <AndroidTabs /> : <IosTabs />;
 }
 
-// ── iOS: 네이티브 탭바 (iOS26 리퀴드 글래스 자동) ──
+
 function IosTabs() {
   return (
     <NativeTabs>
@@ -30,12 +35,11 @@ function IosTabs() {
 }
 
 
-// ── Android: 기본 탭바를 이미지처럼 다크로 커스텀 ──
 function AndroidTabs() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: false, // 각 화면의 Stack이 자체 헤더를 그리므로 탭 헤더는 끔
+        headerShown: false,
         tabBarActiveTintColor: Colors.text,
         tabBarInactiveTintColor: Colors.dim,
         tabBarStyle: {

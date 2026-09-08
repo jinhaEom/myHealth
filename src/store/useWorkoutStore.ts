@@ -1,34 +1,37 @@
 import { create } from 'zustand';
 import * as repo from '@/lib/repo';
-import type { BodyPart, WorkoutLog } from '@/lib/types';
-// import { pushUnsynced } from '@/lib/sync'; // 3단계: 쓰기 직후 서버 반영 (§10)
+import { pushAfterWrite } from '@/lib/sync';
+import type { BodyPart, Goal, WorkoutLog } from '@/lib/types';
 
 interface WorkoutState {
   hydrated: boolean;
-  /** 활성+비활성 전체, sortOrder 순 */
   parts: BodyPart[];
-  /** 삭제 제외, 날짜 오름차순 */
   logs: WorkoutLog[];
+  goal: Goal | null;
   loadAll: () => void;
   saveLog: (input: repo.UpsertLogInput) => void;
   removeLog: (logDate: string) => void;
-  /** 추가된 부위 id, 중복이면 null */
   addPart: (name: string) => string | null;
   renamePart: (id: string, name: string) => boolean;
   setPartActive: (id: string, active: boolean) => void;
   movePart: (id: string, dir: -1 | 1) => void;
+  setGoal: (targetCount: number, recurring: boolean) => void;
   resetAll: () => void;
 }
 
 export const useWorkoutStore = create<WorkoutState>((set) => {
-  const refresh = () => set({ parts: repo.getBodyParts(), logs: repo.getLogs() });
+  const refresh = () => {
+    set({ parts: repo.getBodyParts(), logs: repo.getLogs(), goal: repo.getGoal() });
+    pushAfterWrite();
+  };
   return {
     hydrated: false,
     parts: [],
     logs: [],
+    goal: null,
     loadAll: () => {
       try {
-        set({ parts: repo.getBodyParts(), logs: repo.getLogs(), hydrated: true });
+        set({ parts: repo.getBodyParts(), logs: repo.getLogs(), goal: repo.getGoal(), hydrated: true });
       } catch (e) {
         console.warn('로컬 DB 초기화 실패', e);
       }
@@ -59,9 +62,13 @@ export const useWorkoutStore = create<WorkoutState>((set) => {
       repo.moveBodyPart(id, dir);
       refresh();
     },
+    setGoal: (targetCount, recurring) => {
+      repo.setGoal(targetCount, recurring);
+      refresh();
+    },
     resetAll: () => {
       repo.resetAllData();
-      refresh();
+      set({ parts: repo.getBodyParts(), logs: repo.getLogs(), goal: repo.getGoal() });
     },
   };
 });

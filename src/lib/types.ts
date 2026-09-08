@@ -20,3 +20,19 @@ export interface WorkoutLog {
   memo: string | null;
   partIds: string[];
 }
+
+/** 주간 운동 횟수 목표 */
+export interface Goal {
+  targetCount: number;
+  /** true면 매주 자동 적용, false면 weekStart가 속한 주에만 유효 */
+  recurring: boolean;
+  /** 이 설정이 적용되기 시작한 주의 월요일 (YYYY-MM-DD) */
+  weekStart: string;
+}
+
+export interface GoalProgress {
+  targetCount: number;
+  achievedCount: number;
+  percent: number;
+  recurring: boolean;
+}

@@ -1,6 +1,8 @@
+import { AlertModal } from '@/components/AlertModal';
 import { Colors } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
-import { Alert, Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import Toast from 'react-native-simple-toast';
 import { useSettings } from './hooks/useSettings';
 
 export default function SettingScreen() {
@@ -19,13 +21,25 @@ export default function SettingScreen() {
     setEditingId,
     editName,
     setEditName,
-    logout
+    logout,
+    goal,
+    goalCountInput,
+    setGoalCountInput,
+    goalRecurring,
+    setGoalRecurring,
+    saveGoal,
+    duplicateAlertVisible,
+    setDuplicateAlertVisible,
+    invalidGoalAlertVisible,
+    setInvalidGoalAlertVisible,
+    resetConfirmVisible,
+    setResetConfirmVisible,
   } = useSettings()
 
   const onAdd = () => {
     const name = newName.trim();
     if (!name) return;
-    if (!addPart(name)) Alert.alert('이미 있는 부위예요');
+    if (!addPart(name)) setDuplicateAlertVisible(true);
     else setNewName('');
   };
 
@@ -38,17 +52,20 @@ export default function SettingScreen() {
     if (!editingId) return;
     const name = editName.trim();
     if (name && !renamePart(editingId, name)) {
-      Alert.alert('이미 있는 부위예요');
+      setDuplicateAlertVisible(true);
       return;
     }
     setEditingId(null);
   };
 
-  const onReset = () => {
-    Alert.alert('데이터 초기화', '모든 기록과 부위 설정이 삭제돼요. 되돌릴 수 없어요.', [
-      { text: '취소', style: 'cancel' },
-      { text: '초기화', style: 'destructive', onPress: resetAll },
-    ]);
+  const onSaveGoal = () => {
+    Toast.show("저장되었어요.", Toast.SHORT);
+    if (!saveGoal()) setInvalidGoalAlertVisible(true);
+  };
+
+  const onLogout = async () => {
+    await logout();
+    Toast.show('로그아웃됐어요', Toast.SHORT);
   };
 
   return (
@@ -65,7 +82,6 @@ export default function SettingScreen() {
           {parts.map((p, i) => (
             <View key={p.id} className={`flex-row items-center gap-[10px] ${i > 0 ? 'mt-[12px]' : ''}`}>
               <View className="gap-[2px]">
-                {/* 맨위/맨아래에서 눌러도 moveBodyPart가 무시하므로 항상 활성으로 보여준다 */}
                 <Pressable onPress={() => movePart(p.id, -1)}>
                   <Ionicons name="chevron-up" size={16} color={Colors.sub} />
                 </Pressable>
@@ -95,7 +111,7 @@ export default function SettingScreen() {
               <Switch
                 value={p.isActive}
                 onValueChange={(v) => setPartActive(p.id, v)}
-                trackColor={{ false: Colors.line, true: Colors.dim }}
+                trackColor={{ false: Colors.line, true: Colors.accent }}
                 thumbColor={Colors.text}
               />
             </View>
@@ -118,6 +134,43 @@ export default function SettingScreen() {
             끄면 기록 화면에서 숨겨져요. 과거 기록은 유지돼요.
           </Text>
         </View>
+        <Text className="mb-[8px] mt-[24px] text-[13px] text-sub">주간 목표</Text>
+        <View className="rounded-[16px] bg-card p-[16px]">
+          <View className="flex-row items-center gap-[10px]">
+            <TextInput
+              className="w-[64px] rounded-[8px] bg-bg px-[10px] py-[8px] text-center text-[15px] text-fg"
+              value={goalCountInput}
+              onChangeText={setGoalCountInput}
+              placeholder="4"
+              placeholderTextColor={Colors.dim}
+              keyboardType="number-pad"
+              returnKeyType="done"
+            />
+            <Text className="text-[15px] text-fg">회 / 주</Text>
+            <View className="flex-1" />
+            <Text className="text-[13px] text-sub">매주 반복</Text>
+            <Switch
+              value={goalRecurring}
+              onValueChange={setGoalRecurring}
+              trackColor={{ false: Colors.line, true: Colors.accent }}
+              thumbColor={Colors.text}
+            />
+          </View>
+          <Pressable
+            className="mt-[14px] items-center rounded-[10px] bg-bg py-[10px]"
+            onPress={onSaveGoal}
+          >
+            <Text className="text-[14px] font-medium text-fg">저장</Text>
+          </Pressable>
+          {goal && (
+            <Text className="mt-[10px] text-[12px] text-dim">
+              {goal.recurring
+                ? `현재 목표: 주 ${goal.targetCount}회 · 매주 반복`
+                : `현재 목표: 이번 주 ${goal.targetCount}회 (반복 안 함)`}
+            </Text>
+          )}
+        </View>
+
         <Text className="mb-[8px] mt-[24px] text-[13px] text-sub">계정</Text>
         <View className="rounded-[16px] bg-card p-[16px]">
           <View className="flex-row items-center justify-between">
@@ -126,9 +179,10 @@ export default function SettingScreen() {
           </View>
         </View>
         <View className="rounded-[16px] bg-card p-[16px] mt-[12px]">
-          <Pressable onPress={logout} className="flex-row items-center justify-between ">
+
+          <TouchableOpacity onPress={onLogout} className="flex-row items-center justify-between ">
             <Text className="text-[15px] text-dim">로그아웃</Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
         {/* ── 앱 정보 ── */}
         <Text className="mb-[8px] mt-[24px] text-[13px] text-sub">앱 정보</Text>
@@ -139,6 +193,34 @@ export default function SettingScreen() {
           </View>
         </View>
       </ScrollView>
+
+      <AlertModal
+        visible={duplicateAlertVisible}
+        title="이미 있는 부위예요"
+        contents="다른 이름을 입력해 주세요"
+        okLabel="확인"
+        onOk={() => setDuplicateAlertVisible(false)}
+      />
+      <AlertModal
+        visible={invalidGoalAlertVisible}
+        title="목표 횟수 오류"
+        contents="1 이상의 숫자를 입력해 주세요"
+        okLabel="확인"
+        onOk={() => setInvalidGoalAlertVisible(false)}
+      />
+      <AlertModal
+        visible={resetConfirmVisible}
+        title="데이터 초기화"
+        contents="모든 기록과 부위 설정이 삭제돼요. 되돌릴 수 없어요."
+        okLabel="초기화"
+        cancelLabel="취소"
+        danger
+        onOk={() => {
+          setResetConfirmVisible(false);
+          resetAll();
+        }}
+        onCancel={() => setResetConfirmVisible(false)}
+      />
     </View>
   );
 }

@@ -1,6 +1,7 @@
 import * as Crypto from 'expo-crypto';
-import { getDb, seedDefaultPartsIfEmpty } from './db';
-import type { BodyPart, WorkoutLog } from './types';
+import { todayStr, weekStart } from './date';
+import { getDb, seedDefaultPartsIfEmpty, wipeLocalData } from './db';
+import type { BodyPart, Goal, WorkoutLog } from './types';
 
 /**
  * 로컬 DB CRUD.
@@ -95,7 +96,7 @@ export function upsertLog(input: UpsertLogInput) {
   });
 }
 
-/** 소프트 삭제 — 동기화 시 삭제도 전파된다 (§9-2) */
+/** 소프트 삭제 — 동기화 시 삭제도 전파 */
 export function softDeleteLog(logDate: string) {
   const now = nowIso();
   getDb().runSync(
@@ -104,7 +105,7 @@ export function softDeleteLog(logDate: string) {
   );
 }
 
-/** 추가 성공 시 새 부위의 id 반환, 중복 이름이면 null. 비활성 동명 칩은 되살린다. */
+/** 추가 성공 시 새 부위의 id 반환, 중복 이름이면 null. 비활성 동명 칩은 되살림 */
 export function addBodyPart(name: string): string | null {
   const db = getDb();
   const dup = db.getFirstSync<{ id: string; is_active: number }>(
@@ -159,11 +160,31 @@ export function moveBodyPart(id: string, dir: -1 | 1) {
   });
 }
 
+interface GoalRow { target_count: number; recurring: number; week_start: string }
+
+export function getGoal(): Goal | null {
+  const row = getDb().getFirstSync<GoalRow>(
+    'SELECT target_count, recurring, week_start FROM goals WHERE id = 1',
+  );
+  if (!row) return null;
+  return { targetCount: row.target_count, recurring: row.recurring === 1, weekStart: row.week_start };
+}
+
+/** 목표 설정/수정 — 매번 이번 주를 기준 주로 다시 잡음 */
+export function setGoal(targetCount: number, recurring: boolean) {
+  getDb().runSync(
+    `INSERT INTO goals (id, target_count, recurring, week_start, updated_at)
+     VALUES (1, ?, ?, ?, ?)
+     ON CONFLICT (id) DO UPDATE SET
+       target_count = excluded.target_count, recurring = excluded.recurring,
+       week_start = excluded.week_start, updated_at = excluded.updated_at`,
+    targetCount, recurring ? 1 : 0, weekStart(todayStr()), nowIso(),
+  );
+}
+
 /** 데이터 초기화 — 전부 지우고 기본 부위 재삽입 */
 export function resetAllData() {
   const db = getDb();
-  db.withTransactionSync(() => {
-    db.execSync('DELETE FROM workout_log_parts; DELETE FROM workout_logs; DELETE FROM body_parts;');
-  });
+  wipeLocalData(db);
   seedDefaultPartsIfEmpty(db);
 }

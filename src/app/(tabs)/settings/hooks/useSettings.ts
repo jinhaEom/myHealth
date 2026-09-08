@@ -1,6 +1,6 @@
 import { useAuthStore } from '@/store/useAuthStore';
 import { useWorkoutStore } from '@/store/useWorkoutStore';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const useSettings = () => {
@@ -16,7 +16,29 @@ export const useSettings = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
 
+  const [duplicateAlertVisible, setDuplicateAlertVisible] = useState(false);
+  const [invalidGoalAlertVisible, setInvalidGoalAlertVisible] = useState(false);
+  const [resetConfirmVisible, setResetConfirmVisible] = useState(false);
+
   const logout = useAuthStore((s) => s.logout);
+
+  const goal = useWorkoutStore((s) => s.goal);
+  const setGoal = useWorkoutStore((s) => s.setGoal);
+  const [goalCountInput, setGoalCountInput] = useState(String(goal?.targetCount ?? ''));
+  const [goalRecurring, setGoalRecurring] = useState(goal?.recurring ?? true);
+
+  useEffect(() => {
+    if (!goal) return;
+    setGoalCountInput(String(goal.targetCount));
+    setGoalRecurring(goal.recurring);
+  }, [goal]);
+
+  const saveGoal = () => {
+    const count = parseInt(goalCountInput, 10);
+    if (!Number.isFinite(count) || count <= 0) return false;
+    setGoal(count, goalRecurring);
+    return true;
+  };
 
   return {
     insets,
@@ -32,6 +54,18 @@ export const useSettings = () => {
     setEditingId,
     editName,
     setEditName,
-    logout
+    logout,
+    goal,
+    goalCountInput,
+    setGoalCountInput,
+    goalRecurring,
+    setGoalRecurring,
+    saveGoal,
+    duplicateAlertVisible,
+    setDuplicateAlertVisible,
+    invalidGoalAlertVisible,
+    setInvalidGoalAlertVisible,
+    resetConfirmVisible,
+    setResetConfirmVisible,
   };
 };

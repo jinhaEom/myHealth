@@ -1,11 +1,13 @@
 import { WeekGrass } from '@/components/WeekGrass';
 import { BottomTabInset } from '@/constants/constant';
+import { Colors } from '@/constants/colors';
 import { formatDuration, formatKorean } from '@/lib/date';
+import { Ionicons } from '@expo/vector-icons';
 import { Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { useHome } from './hooks/useHome';
 
 export default function HomeScreen() {
-  const { insets, router, today, weekDays, weekLogs, weekMin } = useHome();
+  const { insets, router, today, weekDays, weekLogs, weekMin, goalProgress } = useHome();
 
   return (
     <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
@@ -13,8 +15,32 @@ export default function HomeScreen() {
         <Text className="mt-[8px] text-[13px] text-sub">{formatKorean(today)}</Text>
         <Text className="mt-[2px] text-[26px] font-medium text-fg">오늘</Text>
 
-        {/* TODO */}
-        <Text className="mt-[2px] text-[13px] text-sub">TODO 이번주 목표 설정 및 달성 퍼센트</Text>
+        {/* 주간 목표 */}
+        {goalProgress ? (
+          <View className="mt-[24px] rounded-[16px] bg-card p-[16px]">
+            <View className="flex-row items-center justify-between">
+              <Text className="text-[13px] text-sub">
+                주간 목표{goalProgress.recurring ? ' · 매주 반복' : ''}
+              </Text>
+              <Text className="text-[13px] text-sub">
+                {goalProgress.achievedCount}/{goalProgress.targetCount}회
+              </Text>
+            </View>
+            <Text className="mt-[6px] text-[28px] font-semibold text-fg">{goalProgress.percent}%</Text>
+            <View className="mt-[10px] h-[6px] overflow-hidden rounded-full bg-line">
+              <View className="h-full rounded-full bg-accent" style={{ width: `${goalProgress.percent}%` }} />
+            </View>
+          </View>
+        ) : (
+          <Pressable
+            className="mt-[24px] flex-row items-center justify-between rounded-[16px] bg-card p-[16px]"
+            onPress={() => router.push('/settings')}
+          >
+            <Text className="text-[13px] text-sub">주간 목표를 설정해보세요</Text>
+            <Ionicons name="chevron-forward" size={16} color={Colors.dim} />
+          </Pressable>
+        )}
+
         {/* 이번 주 */}
         <Text className="mb-[8px] mt-[24px] text-[13px] text-sub">이번 주</Text>
         <View className="rounded-[16px] bg-card p-[16px]">

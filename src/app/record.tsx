@@ -1,3 +1,4 @@
+import { AlertModal } from '@/components/AlertModal';
 import { Chip } from '@/components/Chip';
 import { ScaleSelector } from '@/components/ScaleSelector';
 import { Colors } from '@/constants/colors';
@@ -18,14 +19,13 @@ import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as React from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
   Text,
   TextInput,
-  View,
+  View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -70,7 +70,15 @@ export default function RecordScreen() {
     if (!name) return;
     const id = addPart(name);
     if (!id) {
-      Alert.alert('이미 있는 부위예요');
+      <AlertModal
+        visible={adding}
+        title="이미 있는 부위예요"
+        contents="이미 있는 부위예요"
+        okLabel="확인"
+        onOk={() => {
+          setAdding(false);
+        }}
+      />
       return;
     }
     setSelected((prev) => [...prev, id]);
@@ -89,7 +97,6 @@ export default function RecordScreen() {
       memo: memo.trim() || null,
       partIds: selected,
     });
-    // 저장 햅틱 → 홈 잔디 칸이 채워지는 애니메이션은 WeekGrass가 담당
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.back();
   };
