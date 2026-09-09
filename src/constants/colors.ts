@@ -19,7 +19,7 @@ export const Colors = {
   line: '#26282C',      // 구분선, 게이지 트랙, 빈 잔디 칸
   text: '#ECECEC',
   sub: '#8A8C91',
-  dim: '#6E7075',       // 비활성 탭
+  dim: '#4a4c4fff',       // 비활성 탭
   accent: '#C8F04A',    // 라임 
   onAccent: '#111214',
 } as const;

@@ -1,7 +1,7 @@
-import { create } from 'zustand';
 import * as repo from '@/lib/repo';
 import { pushAfterWrite } from '@/lib/sync';
 import type { BodyPart, Goal, WorkoutLog } from '@/lib/types';
+import { create } from 'zustand';
 
 interface WorkoutState {
   hydrated: boolean;
@@ -15,6 +15,7 @@ interface WorkoutState {
   renamePart: (id: string, name: string) => boolean;
   setPartActive: (id: string, active: boolean) => void;
   movePart: (id: string, dir: -1 | 1) => void;
+  setParts: (parts: BodyPart[]) => void;
   setGoal: (targetCount: number, recurring: boolean) => void;
   resetAll: () => void;
 }
@@ -62,6 +63,7 @@ export const useWorkoutStore = create<WorkoutState>((set) => {
       repo.moveBodyPart(id, dir);
       refresh();
     },
+    setParts: (parts) => set({ parts }),
     setGoal: (targetCount, recurring) => {
       repo.setGoal(targetCount, recurring);
       refresh();

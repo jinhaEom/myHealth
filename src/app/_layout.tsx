@@ -1,4 +1,3 @@
-// NativeWind 스타일 로드 — 앱 전체에서 딱 한 번, 진입점에서 import 한다
 import '@/global.css';
 
 import { Colors } from '@/constants/colors';
@@ -10,6 +9,7 @@ import * as Linking from 'expo-linking';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function RootLayout() {
   const loadAll = useWorkoutStore((s) => s.loadAll);
@@ -34,7 +34,7 @@ export default function RootLayout() {
   }, [url]);
 
   return (
-    <>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style="light" />
       <Stack
         screenOptions={{
@@ -47,6 +47,6 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="record" options={{ presentation: 'modal' }} />
       </Stack>
-    </>
+    </GestureHandlerRootView>
   );
 }

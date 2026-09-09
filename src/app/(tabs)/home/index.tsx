@@ -1,20 +1,31 @@
 import { WeekGrass } from '@/components/WeekGrass';
-import { BottomTabInset } from '@/constants/constant';
 import { Colors } from '@/constants/colors';
+import { BottomTabInset } from '@/constants/constant';
 import { formatDuration, formatKorean } from '@/lib/date';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { useHome } from './hooks/useHome';
 
 export default function HomeScreen() {
-  const { insets, router, today, weekDays, weekLogs, weekMin, goalProgress } = useHome();
+  const { insets, router, today, weekDays, weekLogs, weekMin, goalProgress, consecutiveDays, quoteOfDay } =
+    useHome();
 
   return (
     <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
       <ScrollView contentContainerClassName="px-[16px] pb-[24px]" showsVerticalScrollIndicator={false}>
         <Text className="mt-[8px] text-[13px] text-sub">{formatKorean(today)}</Text>
         <Text className="mt-[2px] text-[26px] font-medium text-fg">오늘</Text>
-
+        <View className="mt-[24px] rounded-[16px] bg-card p-[16px]">
+          <Text className="text-[13px] text-sub">
+            연속 기록일수
+          </Text>
+          <Text className="mt-[2px] text-[26px] font-semibold text-fg">🔥 {consecutiveDays}일</Text>
+        </View>
+        {quoteOfDay && (
+          <Text className="mt-[20px] text-[13px] italic leading-6 text-sub">
+            “{quoteOfDay.quote}” — {quoteOfDay.author}
+          </Text>
+        )}
         {/* 주간 목표 */}
         {goalProgress ? (
           <View className="mt-[24px] rounded-[16px] bg-card p-[16px]">

@@ -1,19 +1,25 @@
 import { AlertModal } from '@/components/AlertModal';
 import { Colors } from '@/constants/colors';
+import { BodyPart } from '@/lib/types';
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Pressable, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  NestableDraggableFlatList,
+  NestableScrollContainer,
+  RenderItemParams,
+  ScaleDecorator,
+} from 'react-native-draggable-flatlist';
 import Toast from 'react-native-simple-toast';
 import { useSettings } from './hooks/useSettings';
 
 export default function SettingScreen() {
-
   const {
     insets,
     parts,
     addPart,
     renamePart,
     setPartActive,
-    movePart,
+    setParts,
     resetAll,
     newName,
     setNewName,
@@ -34,7 +40,7 @@ export default function SettingScreen() {
     setInvalidGoalAlertVisible,
     resetConfirmVisible,
     setResetConfirmVisible,
-  } = useSettings()
+  } = useSettings();
 
   const onAdd = () => {
     const name = newName.trim();
@@ -70,52 +76,66 @@ export default function SettingScreen() {
 
   return (
     <View className="flex-1 bg-bg" style={{ paddingTop: insets.top + 8 }}>
-      <ScrollView
+      <NestableScrollContainer
         contentContainerClassName="px-[16px] pb-[24px] ios:pb-[74px] android:pb-[104px]"
         showsVerticalScrollIndicator={false}
       >
         <Text className="mt-[8px] text-[26px] font-medium text-fg">설정</Text>
 
-        {/* TODO 드래그 기능 추가*/}
         <Text className="mb-[8px] mt-[24px] text-[13px] text-sub">부위 관리</Text>
         <View className="rounded-[16px] bg-card p-[16px]">
-          {parts.map((p, i) => (
-            <View key={p.id} className={`flex-row items-center gap-[10px] ${i > 0 ? 'mt-[12px]' : ''}`}>
-              <View className="gap-[2px]">
-                <Pressable onPress={() => movePart(p.id, -1)}>
-                  <Ionicons name="chevron-up" size={16} color={Colors.sub} />
-                </Pressable>
-                <Pressable onPress={() => movePart(p.id, 1)}>
-                  <Ionicons name="chevron-down" size={16} color={Colors.sub} />
-                </Pressable>
-              </View>
-              {editingId === p.id ? (
-                <TextInput
-                  className="flex-1 rounded-[8px] bg-bg px-[10px] py-[6px] text-[15px] text-fg"
-                  value={editName}
-                  onChangeText={setEditName}
-                  autoFocus
-                  onSubmitEditing={commitEdit}
-                  onBlur={commitEdit}
-                  returnKeyType="done"
-                />
-              ) : (
-                <Pressable className="flex-1" onPress={() => startEdit(p.id, p.name)}>
-                  <Text
-                    className={`text-[15px] ${p.isActive ? 'text-fg' : 'text-dim line-through'}`}
+          <NestableDraggableFlatList
+            data={parts}
+            onDragEnd={({ data }) => setParts(data)}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item, drag, isActive, getIndex }: RenderItemParams<BodyPart>) => {
+              const isEditing = editingId === item.id;
+              const index = getIndex?.() ?? 0;
+              return (
+                <ScaleDecorator>
+                  <View
+                    className={`flex-row items-center gap-[10px] py-[6px] ${
+                      index > 0 ? 'mt-[4px]' : ''
+                    } ${isActive ? 'opacity-70' : ''}`}
                   >
-                    {p.name}
-                  </Text>
-                </Pressable>
-              )}
-              <Switch
-                value={p.isActive}
-                onValueChange={(v) => setPartActive(p.id, v)}
-                trackColor={{ false: Colors.line, true: Colors.accent }}
-                thumbColor={Colors.text}
-              />
-            </View>
-          ))}
+                    <TouchableOpacity
+                      onPressIn={drag}
+                      disabled={isActive}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      className="p-[4px]"
+                    >
+                      <Ionicons name="reorder-two" size={20} color={Colors.sub} />
+                    </TouchableOpacity>
+                    {isEditing ? (
+                      <TextInput
+                        className="flex-1 rounded-[8px] bg-bg px-[10px] py-[6px] text-[15px] text-fg"
+                        value={editName}
+                        onChangeText={setEditName}
+                        autoFocus
+                        onSubmitEditing={commitEdit}
+                        onBlur={commitEdit}
+                        returnKeyType="done"
+                      />
+                    ) : (
+                      <Pressable className="flex-1" onPress={() => startEdit(item.id, item.name)}>
+                        <Text
+                          className={`text-[15px] ${item.isActive ? 'text-fg' : 'text-dim line-through'}`}
+                        >
+                          {item.name}
+                        </Text>
+                      </Pressable>
+                    )}
+                    <Switch
+                      value={item.isActive}
+                      onValueChange={(v) => setPartActive(item.id, v)}
+                      trackColor={{ false: Colors.line, true: Colors.accent }}
+                      thumbColor={Colors.text}
+                    />
+                  </View>
+                </ScaleDecorator>
+              );
+            }}
+          />
           <View className="mt-[12px] flex-row items-center gap-[10px]">
             <TextInput
               className="flex-1 rounded-[8px] bg-bg px-[10px] py-[8px] text-[15px] text-fg"
@@ -141,7 +161,7 @@ export default function SettingScreen() {
               className="w-[64px] rounded-[8px] bg-bg px-[10px] py-[8px] text-center text-[15px] text-fg"
               value={goalCountInput}
               onChangeText={setGoalCountInput}
-              placeholder="4"
+              placeholder="1"
               placeholderTextColor={Colors.dim}
               keyboardType="number-pad"
               returnKeyType="done"
@@ -192,7 +212,7 @@ export default function SettingScreen() {
             <Text className="text-[13px] text-sub">{'1.0.0'}</Text>
           </View>
         </View>
-      </ScrollView>
+      </NestableScrollContainer>
 
       <AlertModal
         visible={duplicateAlertVisible}

@@ -10,6 +10,7 @@ export const useSettings = () => {
   const renamePart = useWorkoutStore((s) => s.renamePart);
   const setPartActive = useWorkoutStore((s) => s.setPartActive);
   const movePart = useWorkoutStore((s) => s.movePart);
+  const setParts = useWorkoutStore((s) => s.setParts);
   const resetAll = useWorkoutStore((s) => s.resetAll);
 
   const [newName, setNewName] = useState('');
@@ -47,6 +48,7 @@ export const useSettings = () => {
     renamePart,
     setPartActive,
     movePart,
+    setParts,
     resetAll,
     newName,
     setNewName,
