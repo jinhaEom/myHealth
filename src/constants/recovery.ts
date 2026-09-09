@@ -6,7 +6,7 @@ export const HEATMAP_LEVELS = 4; //히트맵 레벨
 /** 가입/최초 실행 시 제공하는 기본 부위 7개 */
 export const DEFAULT_BODY_PARTS = ['하체', '가슴', '등', '어깨', '팔', '코어', '유산소'];
 
-export const INTENSITY_LABELS = ['매우 약함', '약함', '보통', '강함', '매우 강함'];
+export const INTENSITY_LABELS = ['아주 약하게', '약하게', '적당히', '세게', '아주 세게'];
 export const CONDITION_LABELS = ['매우 나쁨', '나쁨', '보통', '좋음', '매우 좋음'];
 export const CONDITION_EMOJI = ['😫', '😕', '😐', '🙂', '😄'];
 

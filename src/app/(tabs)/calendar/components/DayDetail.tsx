@@ -20,7 +20,7 @@ export default function DayDetail({ date, log }: { date: string; log: WorkoutLog
   const goRecord = () => router.push({ pathname: '/record', params: { date } });
 
   return (
-    <View className="mt-[16px] rounded-[16px] bg-card p-[16px]">
+    <View className="rounded-[16px] bg-card p-[16px]">
       <Text className="text-[15px] font-medium text-fg">{formatKorean(date)}</Text>
       {!log ? (
         date > today ? (
