@@ -36,3 +36,15 @@ export interface GoalProgress {
   percent: number;
   recurring: boolean;
 }
+
+/** 분할 운동 싸이클의 한 단계 (예: "가슴삼두") */
+export interface WorkoutCycleStep {
+  id: string;
+  label: string;
+  bodyPartIds: string[];
+}
+
+export interface WorkoutCycle {
+  steps: WorkoutCycleStep[];
+  currentIndex: number;
+}

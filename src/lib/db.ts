@@ -66,6 +66,14 @@ function migrate(db: SQLiteDatabase) {
       week_start TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
+
+    -- 운동 싸이클
+    CREATE TABLE IF NOT EXISTS workout_cycle (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      steps_json TEXT NOT NULL,
+      current_index INTEGER NOT NULL DEFAULT 0,
+      updated_at TEXT NOT NULL
+    );
   `);
 }
 
@@ -84,7 +92,7 @@ export function setSyncOwner(userId: string | null) {
 /** 계정 전환·로그아웃 시 이전 계정의 흔적을 지운다 (기본 부위 재시딩은 호출부 책임) */
 export function wipeLocalData(db: SQLiteDatabase) {
   db.withTransactionSync(() => {
-    db.execSync('DELETE FROM workout_log_parts; DELETE FROM workout_logs; DELETE FROM body_parts; DELETE FROM goals;');
+    db.execSync('DELETE FROM workout_log_parts; DELETE FROM workout_logs; DELETE FROM body_parts; DELETE FROM goals; DELETE FROM workout_cycle;');
   });
 }
 

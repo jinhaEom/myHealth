@@ -1,4 +1,5 @@
 import { AlertModal } from '@/components/AlertModal';
+import { Chip } from '@/components/Chip';
 import { Colors } from '@/constants/colors';
 import { BodyPart } from '@/lib/types';
 import { Ionicons } from '@expo/vector-icons';
@@ -40,6 +41,15 @@ export default function SettingScreen() {
     setInvalidGoalAlertVisible,
     resetConfirmVisible,
     setResetConfirmVisible,
+    cycle,
+    cycleSteps,
+    addCycleStep,
+    removeCycleStep,
+    toggleCycleStepPart,
+    moveCycleStep,
+    saveCycle,
+    invalidCycleAlertVisible,
+    setInvalidCycleAlertVisible,
   } = useSettings();
 
   const onAdd = () => {
@@ -69,6 +79,14 @@ export default function SettingScreen() {
     if (!saveGoal()) setInvalidGoalAlertVisible(true);
   };
 
+  const onSaveCycle = () => {
+    if (!saveCycle()) {
+      setInvalidCycleAlertVisible(true);
+      return;
+    }
+    Toast.show('저장되었어요.', Toast.SHORT);
+  };
+
   const onLogout = async () => {
     await logout();
     Toast.show('로그아웃됐어요', Toast.SHORT);
@@ -82,6 +100,7 @@ export default function SettingScreen() {
       >
         <Text className="mt-[8px] text-[26px] font-medium text-fg">설정</Text>
 
+
         <Text className="mb-[8px] mt-[24px] text-[13px] text-sub">부위 관리</Text>
         <View className="rounded-[16px] bg-card p-[16px]">
           <NestableDraggableFlatList
@@ -94,9 +113,8 @@ export default function SettingScreen() {
               return (
                 <ScaleDecorator>
                   <View
-                    className={`flex-row items-center gap-[10px] py-[6px] ${
-                      index > 0 ? 'mt-[4px]' : ''
-                    } ${isActive ? 'opacity-70' : ''}`}
+                    className={`flex-row items-center gap-[10px] py-[6px] ${index > 0 ? 'mt-[4px]' : ''
+                      } ${isActive ? 'opacity-70' : ''}`}
                   >
                     <TouchableOpacity
                       onPressIn={drag}
@@ -176,6 +194,7 @@ export default function SettingScreen() {
               thumbColor={Colors.text}
             />
           </View>
+          
           <Pressable
             className="mt-[14px] items-center rounded-[10px] bg-bg py-[10px]"
             onPress={onSaveGoal}
@@ -187,6 +206,78 @@ export default function SettingScreen() {
               {goal.recurring
                 ? `현재 목표: 주 ${goal.targetCount}회 · 매주 반복`
                 : `현재 목표: 이번 주 ${goal.targetCount}회 (반복 안 함)`}
+            </Text>
+          )}
+        </View>
+
+        <Text className="mb-[8px] mt-[24px] text-[13px] text-sub">운동 싸이클</Text>
+        <View className="rounded-[16px] bg-card p-[16px]">
+          {cycleSteps.length === 0 && (
+            <Text className="text-[13px] text-dim">
+              분할 순서를 등록하면 홈 화면에서 오늘 할 차례를 알려드려요.
+            </Text>
+          )}
+          {cycleSteps.map((step, index) => (
+            <View
+              key={step.id}
+              className={index > 0 ? 'mt-[16px] border-t border-line pt-[16px]' : ''}
+            >
+              <View className="flex-row items-center gap-[8px]">
+                <Text className="w-[16px] text-[13px] text-dim">{index + 1}</Text>
+                <View className="flex-1 rounded-[8px] bg-bg px-[10px] py-[8px]">
+                  <Text className={`text-[15px] ${step.label ? 'text-fg' : 'text-dim'}`}>
+                    {step.label || '아래에서 부위를 선택하세요'}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => moveCycleStep(step.id, -1)}
+                  disabled={index === 0}
+                  hitSlop={8}
+                >
+                  <Ionicons name="chevron-up" size={18} color={index === 0 ? Colors.line : Colors.sub} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => moveCycleStep(step.id, 1)}
+                  disabled={index === cycleSteps.length - 1}
+                  hitSlop={8}
+                >
+                  <Ionicons
+                    name="chevron-down"
+                    size={18}
+                    color={index === cycleSteps.length - 1 ? Colors.line : Colors.sub}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => removeCycleStep(step.id)} hitSlop={8}>
+                  <Ionicons name="close" size={18} color={Colors.dim} />
+                </TouchableOpacity>
+              </View>
+              <View className="mt-[10px] flex-row flex-wrap gap-[8px]">
+                {parts
+                  .filter((p) => p.isActive)
+                  .map((part) => (
+                    <Chip
+                      key={part.id}
+                      label={part.name}
+                      small
+                      selected={step.bodyPartIds.includes(part.id)}
+                      onPress={() => toggleCycleStepPart(step.id, part.id)}
+                    />
+                  ))}
+              </View>
+            </View>
+          ))}
+          <Pressable
+            className="mt-[14px] items-center rounded-[10px] border border-dashed border-line py-[10px]"
+            onPress={addCycleStep}
+          >
+            <Text className="text-[14px] font-medium text-sub">+ 단계 추가</Text>
+          </Pressable>
+          <Pressable className="mt-[10px] items-center rounded-[10px] bg-bg py-[10px]" onPress={onSaveCycle}>
+            <Text className="text-[14px] font-medium text-fg">저장</Text>
+          </Pressable>
+          {cycle && cycle.steps.length > 0 && (
+            <Text className="mt-[10px] text-[12px] text-dim">
+              다음 차례: {cycle.steps[cycle.currentIndex]?.label}
             </Text>
           )}
         </View>
@@ -227,6 +318,13 @@ export default function SettingScreen() {
         contents="1 이상의 숫자를 입력해 주세요"
         okLabel="확인"
         onOk={() => setInvalidGoalAlertVisible(false)}
+      />
+      <AlertModal
+        visible={invalidCycleAlertVisible}
+        title="싸이클 단계 오류"
+        contents="모든 단계에 부위를 하나 이상 선택해 주세요"
+        okLabel="확인"
+        onOk={() => setInvalidCycleAlertVisible(false)}
       />
       <AlertModal
         visible={resetConfirmVisible}

@@ -1,6 +1,6 @@
 import * as repo from '@/lib/repo';
 import { pushAfterWrite } from '@/lib/sync';
-import type { BodyPart, Goal, WorkoutLog } from '@/lib/types';
+import type { BodyPart, Goal, WorkoutCycle, WorkoutCycleStep, WorkoutLog } from '@/lib/types';
 import { create } from 'zustand';
 
 interface WorkoutState {
@@ -8,6 +8,7 @@ interface WorkoutState {
   parts: BodyPart[];
   logs: WorkoutLog[];
   goal: Goal | null;
+  cycle: WorkoutCycle | null;
   loadAll: () => void;
   saveLog: (input: repo.UpsertLogInput) => void;
   removeLog: (logDate: string) => void;
@@ -17,12 +18,13 @@ interface WorkoutState {
   movePart: (id: string, dir: -1 | 1) => void;
   setParts: (parts: BodyPart[]) => void;
   setGoal: (targetCount: number, recurring: boolean) => void;
+  setCycle: (steps: WorkoutCycleStep[]) => void;
   resetAll: () => void;
 }
 
 export const useWorkoutStore = create<WorkoutState>((set) => {
   const refresh = () => {
-    set({ parts: repo.getBodyParts(), logs: repo.getLogs(), goal: repo.getGoal() });
+    set({ parts: repo.getBodyParts(), logs: repo.getLogs(), goal: repo.getGoal(), cycle: repo.getCycle() });
     pushAfterWrite();
   };
   return {
@@ -30,9 +32,16 @@ export const useWorkoutStore = create<WorkoutState>((set) => {
     parts: [],
     logs: [],
     goal: null,
+    cycle: null,
     loadAll: () => {
       try {
-        set({ parts: repo.getBodyParts(), logs: repo.getLogs(), goal: repo.getGoal(), hydrated: true });
+        set({
+          parts: repo.getBodyParts(),
+          logs: repo.getLogs(),
+          goal: repo.getGoal(),
+          cycle: repo.getCycle(),
+          hydrated: true,
+        });
       } catch (e) {
         console.warn('로컬 DB 초기화 실패', e);
       }
@@ -68,9 +77,13 @@ export const useWorkoutStore = create<WorkoutState>((set) => {
       repo.setGoal(targetCount, recurring);
       refresh();
     },
+    setCycle: (steps) => {
+      repo.setCycleSteps(steps);
+      refresh();
+    },
     resetAll: () => {
       repo.resetAllData();
-      set({ parts: repo.getBodyParts(), logs: repo.getLogs(), goal: repo.getGoal() });
+      set({ parts: repo.getBodyParts(), logs: repo.getLogs(), goal: repo.getGoal(), cycle: repo.getCycle() });
     },
   };
 });

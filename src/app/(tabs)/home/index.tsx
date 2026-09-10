@@ -7,25 +7,62 @@ import { Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { useHome } from './hooks/useHome';
 
 export default function HomeScreen() {
-  const { insets, router, today, weekDays, weekLogs, weekMin, goalProgress, consecutiveDays, quoteOfDay } =
-    useHome();
+  const {
+    insets,
+    router,
+    today,
+    weekDays,
+    weekLogs,
+    weekMin,
+    goalProgress,
+    consecutiveDays,
+    quoteOfDay,
+    currentCycleStep,
+    nextCycleStep,
+  } = useHome();
 
   return (
     <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
       <ScrollView contentContainerClassName="px-[16px] pb-[24px]" showsVerticalScrollIndicator={false}>
         <Text className="mt-[8px] text-[13px] text-sub">{formatKorean(today)}</Text>
         <Text className="mt-[2px] text-[26px] font-medium text-fg">오늘</Text>
-        <View className="mt-[24px] rounded-[16px] bg-card p-[16px]">
-          <Text className="text-[13px] text-sub">
-            연속 기록일수
-          </Text>
-          <Text className="mt-[2px] text-[26px] font-semibold text-fg">🔥 {consecutiveDays}일</Text>
-        </View>
         {quoteOfDay && (
-          <Text className="mt-[20px] text-[13px] italic leading-6 text-sub">
-            “{quoteOfDay.quote}” — {quoteOfDay.author}
-          </Text>
+          <>
+            <Text className="mt-[20px] text-[13px] italic leading-6 text-sub">
+              “{quoteOfDay.quote}”
+            </Text>
+            <Text className="mt-[2px] text-[13px] italic leading-6 text-sub">
+              - {quoteOfDay.author}
+            </Text>
+          </>
         )}
+        <View className="flex-row justify-between w-full gap-[12px]">
+          <View className="mt-[24px] rounded-[16px] bg-card p-[16px] w-1/3">
+            <Text className="text-[13px] text-sub">
+              연속 기록일수
+            </Text>
+            <Text className="mt-[2px] text-[26px] font-semibold text-fg">🔥 {consecutiveDays}일</Text>
+          </View>
+          {/* 운동 싸이클 */}
+          {currentCycleStep ? (
+            <View className="mt-[24px] rounded-[16px] bg-card p-[16px] flex-1">
+              <Text className="text-[13px] text-sub">오늘은 이 순서예요</Text>
+              <Text className="mt-[6px] text-[28px] font-semibold text-fg">{currentCycleStep.label}</Text>
+              {nextCycleStep && (
+                <Text className="mt-[6px] text-[12px] text-dim">다음 차례: {nextCycleStep.label}</Text>
+              )}
+            </View>
+          ) : (
+            <Pressable
+              className="mt-[24px] flex-row items-center justify-between rounded-[16px] bg-card p-[16px]"
+              onPress={() => router.push('/settings')}
+            >
+              <Text className="text-[13px] text-sub">운동 싸이클을 등록해보세요</Text>
+              <Ionicons name="chevron-forward" size={16} color={Colors.dim} />
+            </Pressable>
+          )}
+        </View>
+
         {/* 주간 목표 */}
         {goalProgress ? (
           <View className="mt-[24px] rounded-[16px] bg-card p-[16px]">
@@ -51,6 +88,8 @@ export default function HomeScreen() {
             <Ionicons name="chevron-forward" size={16} color={Colors.dim} />
           </Pressable>
         )}
+
+
 
         {/* 이번 주 */}
         <Text className="mb-[8px] mt-[24px] text-[13px] text-sub">이번 주</Text>

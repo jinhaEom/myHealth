@@ -1,7 +1,7 @@
 import * as Crypto from 'expo-crypto';
 import { todayStr, weekStart } from './date';
 import { getDb, seedDefaultPartsIfEmpty, wipeLocalData } from './db';
-import type { BodyPart, Goal, WorkoutLog } from './types';
+import type { BodyPart, Goal, WorkoutCycle, WorkoutCycleStep, WorkoutLog } from './types';
 
 /**
  * 로컬 DB CRUD.
@@ -93,6 +93,8 @@ export function upsertLog(input: UpsertLogInput) {
     for (const partId of input.partIds) {
       db.runSync('INSERT INTO workout_log_parts (log_id, body_part_id) VALUES (?, ?)', id, partId);
     }
+    // 새 기록일 때만 싸이클을 다음 단계로 넘긴다 (기존 기록 수정 시에는 넘기지 않음)
+    if (!existing) advanceCycleStep(db);
   });
 }
 
@@ -180,6 +182,42 @@ export function setGoal(targetCount: number, recurring: boolean) {
        week_start = excluded.week_start, updated_at = excluded.updated_at`,
     targetCount, recurring ? 1 : 0, weekStart(todayStr()), nowIso(),
   );
+}
+
+interface CycleRow { steps_json: string; current_index: number }
+
+export function getCycle(): WorkoutCycle | null {
+  const row = getDb().getFirstSync<CycleRow>('SELECT steps_json, current_index FROM workout_cycle WHERE id = 1');
+  if (!row) return null;
+  const steps: WorkoutCycleStep[] = JSON.parse(row.steps_json);
+  if (steps.length === 0) return null;
+  return { steps, currentIndex: row.current_index % steps.length };
+}
+
+/** 싸이클 단계 등록/수정 */
+export function setCycleSteps(steps: WorkoutCycleStep[]) {
+  const db = getDb();
+  const existing = db.getFirstSync<{ current_index: number }>(
+    'SELECT current_index FROM workout_cycle WHERE id = 1',
+  );
+  const currentIndex = steps.length === 0 ? 0 : (existing?.current_index ?? 0) % steps.length;
+  db.runSync(
+    `INSERT INTO workout_cycle (id, steps_json, current_index, updated_at)
+     VALUES (1, ?, ?, ?)
+     ON CONFLICT (id) DO UPDATE SET
+       steps_json = excluded.steps_json, current_index = excluded.current_index, updated_at = excluded.updated_at`,
+    JSON.stringify(steps), currentIndex, nowIso(),
+  );
+}
+
+/** 새 운동 기록이 저장될 때 싸이클을 다음 단계로  */
+function advanceCycleStep(db: ReturnType<typeof getDb>) {
+  const row = db.getFirstSync<CycleRow>('SELECT steps_json, current_index FROM workout_cycle WHERE id = 1');
+  if (!row) return;
+  const steps: WorkoutCycleStep[] = JSON.parse(row.steps_json);
+  if (steps.length === 0) return;
+  const nextIndex = (row.current_index + 1) % steps.length;
+  db.runSync('UPDATE workout_cycle SET current_index = ?, updated_at = ? WHERE id = 1', nextIndex, nowIso());
 }
 
 /** 데이터 초기화 — 전부 지우고 기본 부위 재삽입 */

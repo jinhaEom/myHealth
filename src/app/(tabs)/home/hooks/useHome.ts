@@ -12,6 +12,7 @@ export const useHome = () => {
   const router = useRouter();
   const logs = useWorkoutStore((s) => s.logs);
   const goal = useWorkoutStore((s) => s.goal);
+  const cycle = useWorkoutStore((s) => s.cycle);
 
   const today = todayStr();
   const logsByDate = useMemo(() => new Map(logs.map((l) => [l.logDate, l])), [logs]);
@@ -49,6 +50,10 @@ export const useHome = () => {
     return quotes[seed % quotes.length];
   }, [today]);
 
+  const currentCycleStep = cycle && cycle.steps.length > 0 ? cycle.steps[cycle.currentIndex] : null;
+  const nextCycleStep =
+    cycle && cycle.steps.length > 1 ? cycle.steps[(cycle.currentIndex + 1) % cycle.steps.length] : null;
+
   return {
     insets,
     router,
@@ -59,5 +64,7 @@ export const useHome = () => {
     goalProgress,
     consecutiveDays,
     quoteOfDay,
+    currentCycleStep,
+    nextCycleStep,
   }
 }
