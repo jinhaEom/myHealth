@@ -13,13 +13,11 @@ export const Colors = {
     backgroundSelected: '#2E3135',
     textSecondary: '#B0B4BA',
   },
-  bg: '#0E0F11',
-  card: '#181A1D',
-  cardSelected: '#2E3135', // 세그먼트 선택 칸 등
-  line: '#26282C',      // 구분선, 게이지 트랙, 빈 잔디 칸
-  text: '#ECECEC',
-  sub: '#8A8C91',
-  dim: '#4a4c4fff',       // 비활성 탭
-  accent: '#C8F04A',    // 라임 
+  mainColor: '#C8F04A',
+  tabBarColor: '#0E0F11',
+  gray1Color: '#26282C',
+  gray2Color: '#8A8C91',
+  whiteColor: '#ECECEC',
+  disabledColor: '#4a4c4fff',
   onAccent: '#111214',
 } as const;

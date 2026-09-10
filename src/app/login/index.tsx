@@ -69,11 +69,11 @@ export default function LoginScreen() {
 
                 <View className="gap-[12px]">
                     <View className="flex-row items-center gap-[10px] rounded-[14px] bg-card px-[14px]">
-                        <Ionicons name="mail-outline" size={18} color={Colors.dim} />
+                        <Ionicons name="mail-outline" size={18} color={Colors.disabledColor} />
                         <TextInput
                             className="h-[50px] flex-1 text-[15px] text-fg"
                             placeholder="이메일"
-                            placeholderTextColor={Colors.dim}
+                            placeholderTextColor={Colors.disabledColor}
                             value={email}
                             onChangeText={setEmail}
                             autoCapitalize="none"
@@ -83,11 +83,11 @@ export default function LoginScreen() {
                         />
                     </View>
                     <View className="flex-row items-center gap-[10px] rounded-[14px] bg-card px-[14px]">
-                        <Ionicons name="lock-closed-outline" size={18} color={Colors.dim} />
+                        <Ionicons name="lock-closed-outline" size={18} color={Colors.disabledColor} />
                         <TextInput
                             className="h-[50px] flex-1 text-[15px] text-fg"
                             placeholder="비밀번호"
-                            placeholderTextColor={Colors.dim}
+                            placeholderTextColor={Colors.disabledColor}
                             value={password}
                             onChangeText={setPassword}
                             secureTextEntry={!showPassword}
@@ -98,7 +98,7 @@ export default function LoginScreen() {
                             <Ionicons
                                 name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                                 size={18}
-                                color={Colors.dim}
+                                color={Colors.disabledColor}
                             />
                         </Pressable>
                     </View>

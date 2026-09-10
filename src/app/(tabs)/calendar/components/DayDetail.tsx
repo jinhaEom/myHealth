@@ -13,7 +13,7 @@ import { Pressable, Text, View } from 'react-native';
 export default function DayDetail({ date, log }: { date: string; log: WorkoutLog | undefined }) {
   const router = useRouter();
   const today = todayStr();
-  const parts = useWorkoutStore((s) => s.parts);
+  const partNamesById = useWorkoutStore((s) => s.partNamesById);
   const removeLog = useWorkoutStore((s) => s.removeLog);
   const [confirmVisible, setConfirmVisible] = useState(false);
 
@@ -37,8 +37,8 @@ export default function DayDetail({ date, log }: { date: string; log: WorkoutLog
         <>
           <View className="mt-[10px] flex-row flex-wrap gap-[6px]">
             {log.partIds.map((id) => {
-              const part = parts.find((p) => p.id === id);
-              return part ? <Chip key={id} label={part.name} small /> : null;
+              const name = partNamesById[id];
+              return name ? <Chip key={id} label={name} small /> : null;
             })}
           </View>
           <Text className="mt-[10px] text-[14px] text-fg">

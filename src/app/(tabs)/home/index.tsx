@@ -3,7 +3,10 @@ import { Colors } from '@/constants/colors';
 import { BottomTabInset } from '@/constants/constant';
 import { formatDuration, formatKorean } from '@/lib/date';
 import { Ionicons } from '@expo/vector-icons';
-import { Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Platform, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { CycleModal } from './detail/CycleModal';
+import { GoalModal } from './detail/GoalModal';
 import { useHome } from './hooks/useHome';
 
 export default function HomeScreen() {
@@ -19,6 +22,10 @@ export default function HomeScreen() {
     quoteOfDay,
     currentCycleStep,
     nextCycleStep,
+    isCycleModalOpen,
+    setIsCycleModalOpen,
+    isGoalModalOpen,
+    setIsGoalModalOpen,
   } = useHome();
 
   return (
@@ -46,7 +53,12 @@ export default function HomeScreen() {
           {/* 운동 싸이클 */}
           {currentCycleStep ? (
             <View className="mt-[24px] rounded-[16px] bg-card p-[16px] flex-1">
-              <Text className="text-[13px] text-sub">오늘은 이 순서예요</Text>
+              <View className="flex-row justify-between">
+                <Text className="text-[13px] text-sub">오늘 할 운동</Text>
+                <TouchableOpacity onPress={() => setIsCycleModalOpen(true)}>
+                  <Ionicons name="pencil" size={16} color={Colors.disabledColor} />
+                </TouchableOpacity>
+              </View>
               <Text className="mt-[6px] text-[28px] font-semibold text-fg">{currentCycleStep.label}</Text>
               {nextCycleStep && (
                 <Text className="mt-[6px] text-[12px] text-dim">다음 차례: {nextCycleStep.label}</Text>
@@ -55,10 +67,10 @@ export default function HomeScreen() {
           ) : (
             <Pressable
               className="mt-[24px] flex-row items-center justify-between rounded-[16px] bg-card p-[16px]"
-              onPress={() => router.push('/settings')}
+              onPress={() => setIsCycleModalOpen(true)}
             >
               <Text className="text-[13px] text-sub">운동 싸이클을 등록해보세요</Text>
-              <Ionicons name="chevron-forward" size={16} color={Colors.dim} />
+              <Ionicons name="chevron-forward" size={16} color={Colors.disabledColor} />
             </Pressable>
           )}
         </View>
@@ -66,10 +78,16 @@ export default function HomeScreen() {
         {/* 주간 목표 */}
         {goalProgress ? (
           <View className="mt-[24px] rounded-[16px] bg-card p-[16px]">
-            <View className="flex-row items-center justify-between">
+            <View className="flex-row justify-between">
               <Text className="text-[13px] text-sub">
                 주간 목표{goalProgress.recurring ? ' · 매주 반복' : ''}
               </Text>
+              <TouchableOpacity onPress={() => setIsGoalModalOpen(true)}>
+                <Ionicons name="pencil" size={16} color={Colors.disabledColor} />
+              </TouchableOpacity>
+            </View>
+            <View className="flex-row items-center justify-between">
+
               <Text className="text-[13px] text-sub">
                 {goalProgress.achievedCount}/{goalProgress.targetCount}회
               </Text>
@@ -78,14 +96,15 @@ export default function HomeScreen() {
             <View className="mt-[10px] h-[6px] overflow-hidden rounded-full bg-line">
               <View className="h-full rounded-full bg-accent" style={{ width: `${goalProgress.percent}%` }} />
             </View>
+
           </View>
         ) : (
           <Pressable
             className="mt-[24px] flex-row items-center justify-between rounded-[16px] bg-card p-[16px]"
-            onPress={() => router.push('/settings')}
+            onPress={() => setIsCycleModalOpen(true)}
           >
             <Text className="text-[13px] text-sub">주간 목표를 설정해보세요</Text>
-            <Ionicons name="chevron-forward" size={16} color={Colors.dim} />
+            <Ionicons name="chevron-forward" size={16} color={Colors.disabledColor} />
           </Pressable>
         )}
 
@@ -102,6 +121,14 @@ export default function HomeScreen() {
           </Text>
         </View>
       </ScrollView>
+      <CycleModal
+        visible={isCycleModalOpen}
+        onClose={() => setIsCycleModalOpen(false)}
+      />
+      <GoalModal
+        visible={isGoalModalOpen}
+        onClose={() => setIsGoalModalOpen(false)}
+      />
       <View
         className="px-[16px] pt-[8px]"
         style={{ paddingBottom: Platform.OS === 'ios' ? insets.bottom + BottomTabInset : 16 }}

@@ -4,7 +4,7 @@ import { computeGoalProgress } from '@/lib/goal';
 import { heatLevel } from '@/lib/heatmap';
 import { useWorkoutStore } from '@/store/useWorkoutStore';
 import { useRouter } from 'expo-router';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const useHome = () => {
@@ -17,6 +17,8 @@ export const useHome = () => {
   const today = todayStr();
   const logsByDate = useMemo(() => new Map(logs.map((l) => [l.logDate, l])), [logs]);
   const ws = weekStart(today);
+  const [isCycleModalOpen, setIsCycleModalOpen] = useState(false)
+  const [isGoalModalOpen, setIsGoalModalOpen] = useState(false)
   const weekDays = useMemo(
     () =>
       Array.from({ length: 7 }, (_, i) => {
@@ -66,5 +68,9 @@ export const useHome = () => {
     quoteOfDay,
     currentCycleStep,
     nextCycleStep,
+    isCycleModalOpen,
+    setIsCycleModalOpen,
+    isGoalModalOpen,
+    setIsGoalModalOpen,
   }
 }

@@ -26,6 +26,7 @@ function migrate(db: SQLiteDatabase) {
       sort_order INTEGER NOT NULL DEFAULT 0,
       is_active INTEGER NOT NULL DEFAULT 1,
       updated_at TEXT NOT NULL,
+      deleted_at TEXT,
       synced INTEGER NOT NULL DEFAULT 0
     );
 
@@ -75,6 +76,16 @@ function migrate(db: SQLiteDatabase) {
       updated_at TEXT NOT NULL
     );
   `);
+
+  // 이미 설치된 기기의 body_parts 테이블에는 deleted_at 컬럼이 없을 수 있어 있는지 확인 후 추가한다.
+  ensureColumn(db, 'body_parts', 'deleted_at', 'TEXT');
+}
+
+function ensureColumn(db: SQLiteDatabase, table: string, column: string, ddl: string) {
+  const cols = db.getAllSync<{ name: string }>(`PRAGMA table_info(${table})`);
+  if (!cols.some((c) => c.name === column)) {
+    db.execSync(`ALTER TABLE ${table} ADD COLUMN ${column} ${ddl}`);
+  }
 }
 
 export function getSyncOwner(): string | null {

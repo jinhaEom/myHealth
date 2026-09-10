@@ -87,22 +87,22 @@ export default function SignupScreen() {
 
         <View className="gap-[12px]">
           <View className="flex-row items-center gap-[10px] rounded-[14px] bg-card px-[14px]">
-            <Ionicons name="person-outline" size={18} color={Colors.dim} />
+            <Ionicons name="person-outline" size={18} color={Colors.disabledColor} />
             <TextInput
               className="h-[50px] flex-1 text-[15px] text-fg"
               placeholder="이름"
-              placeholderTextColor={Colors.dim}
+              placeholderTextColor={Colors.disabledColor}
               value={name}
               onChangeText={setName}
               returnKeyType="next"
             />
           </View>
           <View className="flex-row items-center gap-[10px] rounded-[14px] bg-card px-[14px]">
-            <Ionicons name="mail-outline" size={18} color={Colors.dim} />
+            <Ionicons name="mail-outline" size={18} color={Colors.disabledColor} />
             <TextInput
               className="h-[50px] flex-1 text-[15px] text-fg"
               placeholder="이메일"
-              placeholderTextColor={Colors.dim}
+              placeholderTextColor={Colors.disabledColor}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
@@ -112,11 +112,11 @@ export default function SignupScreen() {
             />
           </View>
           <View className="flex-row items-center gap-[10px] rounded-[14px] bg-card px-[14px]">
-            <Ionicons name="lock-closed-outline" size={18} color={Colors.dim} />
+            <Ionicons name="lock-closed-outline" size={18} color={Colors.disabledColor} />
             <TextInput
               className="h-[50px] flex-1 text-[15px] text-fg"
               placeholder="비밀번호 (6자 이상)"
-              placeholderTextColor={Colors.dim}
+              placeholderTextColor={Colors.disabledColor}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
@@ -126,16 +126,16 @@ export default function SignupScreen() {
               <Ionicons
                 name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                 size={18}
-                color={Colors.dim}
+                color={Colors.disabledColor}
               />
             </Pressable>
           </View>
           <View className="flex-row items-center gap-[10px] rounded-[14px] bg-card px-[14px]">
-            <Ionicons name="lock-closed-outline" size={18} color={Colors.dim} />
+            <Ionicons name="lock-closed-outline" size={18} color={Colors.disabledColor} />
             <TextInput
               className="h-[50px] flex-1 text-[15px] text-fg"
               placeholder="비밀번호 확인"
-              placeholderTextColor={Colors.dim}
+              placeholderTextColor={Colors.disabledColor}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry={!showPassword}

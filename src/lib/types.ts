@@ -3,7 +3,7 @@ export interface BodyPart {
   id: string;
   name: string;
   sortOrder: number;
-  /** false여도 과거 기록의 부위는 유지된다 (비활성화 = 삭제 대용) */
+  /** false면 새 기록 화면에서만 숨김 */
   isActive: boolean;
 }
 
@@ -36,8 +36,6 @@ export interface GoalProgress {
   percent: number;
   recurring: boolean;
 }
-
-/** 분할 운동 싸이클의 한 단계 (예: "가슴삼두") */
 export interface WorkoutCycleStep {
   id: string;
   label: string;

@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react';
-import { Animated, Text, View } from 'react-native';
 import { Colors } from '@/constants/colors';
 import { heatColor } from '@/lib/heatmap';
+import { useEffect, useRef } from 'react';
+import { Animated, Text, View } from 'react-native';
 
 export interface WeekDay {
   date: string;
@@ -50,7 +50,7 @@ function Cell({ level, isToday }: { level: number; isToday: boolean }) {
           backgroundColor: heatColor(level),
           transform: [{ scale }],
         },
-        isToday && { borderWidth: 1, borderColor: Colors.sub },
+        isToday && { borderWidth: 1, borderColor: Colors.gray2Color },
       ]}
     />
   );

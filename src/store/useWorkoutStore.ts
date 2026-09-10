@@ -6,6 +6,8 @@ import { create } from 'zustand';
 interface WorkoutState {
   hydrated: boolean;
   parts: BodyPart[];
+  /** 부위 ID로 부위명을 찾는 사전 (삭제된 부위도 과거 기록 조회를 위해 포함) */
+  partNamesById: Record<string, string>;
   logs: WorkoutLog[];
   goal: Goal | null;
   cycle: WorkoutCycle | null;
@@ -13,8 +15,8 @@ interface WorkoutState {
   saveLog: (input: repo.UpsertLogInput) => void;
   removeLog: (logDate: string) => void;
   addPart: (name: string) => string | null;
-  renamePart: (id: string, name: string) => boolean;
   setPartActive: (id: string, active: boolean) => void;
+  removePart: (id: string) => void;
   movePart: (id: string, dir: -1 | 1) => void;
   setParts: (parts: BodyPart[]) => void;
   setGoal: (targetCount: number, recurring: boolean) => void;
@@ -24,12 +26,19 @@ interface WorkoutState {
 
 export const useWorkoutStore = create<WorkoutState>((set) => {
   const refresh = () => {
-    set({ parts: repo.getBodyParts(), logs: repo.getLogs(), goal: repo.getGoal(), cycle: repo.getCycle() });
+    set({
+      parts: repo.getBodyParts(),
+      partNamesById: repo.getBodyPartNamesById(),
+      logs: repo.getLogs(),
+      goal: repo.getGoal(),
+      cycle: repo.getCycle(),
+    });
     pushAfterWrite();
   };
   return {
     hydrated: false,
     parts: [],
+    partNamesById: {},
     logs: [],
     goal: null,
     cycle: null,
@@ -37,6 +46,7 @@ export const useWorkoutStore = create<WorkoutState>((set) => {
       try {
         set({
           parts: repo.getBodyParts(),
+          partNamesById: repo.getBodyPartNamesById(),
           logs: repo.getLogs(),
           goal: repo.getGoal(),
           cycle: repo.getCycle(),
@@ -59,13 +69,12 @@ export const useWorkoutStore = create<WorkoutState>((set) => {
       if (id) refresh();
       return id;
     },
-    renamePart: (id, name) => {
-      const ok = repo.renameBodyPart(id, name.trim());
-      if (ok) refresh();
-      return ok;
-    },
     setPartActive: (id, active) => {
       repo.setBodyPartActive(id, active);
+      refresh();
+    },
+    removePart: (id) => {
+      repo.deleteBodyPart(id);
       refresh();
     },
     movePart: (id, dir) => {
@@ -83,7 +92,13 @@ export const useWorkoutStore = create<WorkoutState>((set) => {
     },
     resetAll: () => {
       repo.resetAllData();
-      set({ parts: repo.getBodyParts(), logs: repo.getLogs(), goal: repo.getGoal(), cycle: repo.getCycle() });
+      set({
+        parts: repo.getBodyParts(),
+        partNamesById: repo.getBodyPartNamesById(),
+        logs: repo.getLogs(),
+        goal: repo.getGoal(),
+        cycle: repo.getCycle(),
+      });
     },
   };
 });

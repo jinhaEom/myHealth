@@ -37,11 +37,11 @@ export default function HeatmapView() {
     >
       <View className="mb-[10px] mt-[18px] flex-row items-center justify-between px-[4px]">
         <Pressable onPress={() => setYear((y) => y - 1)} hitSlop={10}>
-          <Ionicons name="chevron-back" size={20} color={Colors.sub} />
+          <Ionicons name="chevron-back" size={20} color={Colors.gray2Color} />
         </Pressable>
         <Text className="text-[17px] font-medium text-fg">{year}년</Text>
         <Pressable onPress={() => setYear((y) => y + 1)} hitSlop={10}>
-          <Ionicons name="chevron-forward" size={20} color={Colors.sub} />
+          <Ionicons name="chevron-forward" size={20} color={Colors.gray2Color} />
         </Pressable>
       </View>
 

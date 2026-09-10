@@ -32,10 +32,10 @@ export function SocialAuthButtons({ mode, onSuccess }: Props) {
         disabled={googleLoading}
       >
         {googleLoading ? (
-          <ActivityIndicator color={Colors.text} />
+          <ActivityIndicator color={Colors.whiteColor} />
         ) : (
           <>
-            <AntDesign name="google" size={18} color={Colors.text} />
+            <AntDesign name="google" size={18} color={Colors.whiteColor} />
             <Text className="text-[15px] font-medium text-fg">
               {mode === 'signup' ? 'Google로 가입하기' : 'Google로 계속하기'}
             </Text>

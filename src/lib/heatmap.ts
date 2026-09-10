@@ -19,8 +19,8 @@ export function heatLevel(log: WorkoutLog | undefined): number {
 const LEVEL_ALPHA = ['', '40', '73', 'BF', 'FF'];
 
 export function heatColor(level: number): string {
-  if (level <= 0) return Colors.line;
-  return `${Colors.accent}${LEVEL_ALPHA[Math.min(level, LEVEL_ALPHA.length - 1)]}`;
+  if (level <= 0) return Colors.gray1Color;
+  return `${Colors.mainColor}${LEVEL_ALPHA[Math.min(level, LEVEL_ALPHA.length - 1)]}`;
 }
 
 export function yearGrid(year: number): { weeks: (string | null)[][]; monthLabels: (string | null)[] } {

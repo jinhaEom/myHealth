@@ -39,7 +39,7 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: Colors.bg },
+          contentStyle: { backgroundColor: Colors.tabBarColor },
         }}
       >
         <Stack.Screen name="login" />

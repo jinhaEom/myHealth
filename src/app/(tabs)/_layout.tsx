@@ -1,9 +1,9 @@
+import { Colors } from '@/constants/colors';
+import { useAuthStore } from '@/store/useAuthStore';
 import { Ionicons } from '@expo/vector-icons';
 import { Redirect, Tabs } from 'expo-router';
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { Platform } from 'react-native';
-import { Colors } from '@/constants/colors';
-import { useAuthStore } from '@/store/useAuthStore';
 
 export default function TabsLayout() {
 
@@ -40,11 +40,11 @@ function AndroidTabs() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: Colors.text,
-        tabBarInactiveTintColor: Colors.dim,
+        tabBarActiveTintColor: Colors.whiteColor,
+        tabBarInactiveTintColor: Colors.disabledColor,
         tabBarStyle: {
-          backgroundColor: Colors.bg,
-          borderTopColor: Colors.line,
+          backgroundColor: Colors.tabBarColor,
+          borderTopColor: Colors.gray1Color,
         },
         tabBarLabelStyle: { fontSize: 12 },
       }}

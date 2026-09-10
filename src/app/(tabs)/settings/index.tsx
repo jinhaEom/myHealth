@@ -1,8 +1,8 @@
 import { AlertModal } from '@/components/AlertModal';
-import { Chip } from '@/components/Chip';
 import { Colors } from '@/constants/colors';
 import { BodyPart } from '@/lib/types';
 import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
 import { Pressable, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import {
   NestableDraggableFlatList,
@@ -18,16 +18,11 @@ export default function SettingScreen() {
     insets,
     parts,
     addPart,
-    renamePart,
     setPartActive,
     setParts,
     resetAll,
     newName,
     setNewName,
-    editingId,
-    setEditingId,
-    editName,
-    setEditName,
     logout,
     goal,
     goalCountInput,
@@ -41,6 +36,10 @@ export default function SettingScreen() {
     setInvalidGoalAlertVisible,
     resetConfirmVisible,
     setResetConfirmVisible,
+    deleteTargetId,
+    requestDeletePart,
+    cancelDeletePart,
+    confirmDeletePart,
     cycle,
     cycleSteps,
     addCycleStep,
@@ -52,26 +51,13 @@ export default function SettingScreen() {
     setInvalidCycleAlertVisible,
   } = useSettings();
 
+  const [editMode, setEditMode] = useState(false);
+
   const onAdd = () => {
     const name = newName.trim();
     if (!name) return;
     if (!addPart(name)) setDuplicateAlertVisible(true);
     else setNewName('');
-  };
-
-  const startEdit = (id: string, name: string) => {
-    setEditingId(id);
-    setEditName(name);
-  };
-
-  const commitEdit = () => {
-    if (!editingId) return;
-    const name = editName.trim();
-    if (name && !renamePart(editingId, name)) {
-      setDuplicateAlertVisible(true);
-      return;
-    }
-    setEditingId(null);
   };
 
   const onSaveGoal = () => {
@@ -93,7 +79,7 @@ export default function SettingScreen() {
   };
 
   return (
-    <View className="flex-1 bg-bg" style={{ paddingTop: insets.top + 8 }}>
+    <View className="flex-1 bg-bg" style={{ paddingTop: insets.top + 8, paddingBottom: insets.bottom + 8 }}>
       <NestableScrollContainer
         contentContainerClassName="px-[16px] pb-[24px] ios:pb-[74px] android:pb-[104px]"
         showsVerticalScrollIndicator={false}
@@ -101,14 +87,18 @@ export default function SettingScreen() {
         <Text className="mt-[8px] text-[26px] font-medium text-fg">설정</Text>
 
 
-        <Text className="mb-[8px] mt-[24px] text-[13px] text-sub">부위 관리</Text>
+        <View className="mb-[8px] mt-[24px] flex-row items-center justify-between">
+          <Text className="text-[13px] text-sub">부위 관리</Text>
+          <TouchableOpacity onPress={() => setEditMode((v) => !v)} hitSlop={8} className="p-[4px]">
+            <Ionicons name={editMode ? 'checkmark' : 'pencil'} size={16} color={Colors.gray2Color} />
+          </TouchableOpacity>
+        </View>
         <View className="rounded-[16px] bg-card p-[16px]">
           <NestableDraggableFlatList
             data={parts}
             onDragEnd={({ data }) => setParts(data)}
             keyExtractor={(item) => item.id}
             renderItem={({ item, drag, isActive, getIndex }: RenderItemParams<BodyPart>) => {
-              const isEditing = editingId === item.id;
               const index = getIndex?.() ?? 0;
               return (
                 <ScaleDecorator>
@@ -122,33 +112,27 @@ export default function SettingScreen() {
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                       className="p-[4px]"
                     >
-                      <Ionicons name="reorder-two" size={20} color={Colors.sub} />
+                      <Ionicons name="reorder-two" size={20} color={Colors.gray2Color} />
                     </TouchableOpacity>
-                    {isEditing ? (
-                      <TextInput
-                        className="flex-1 rounded-[8px] bg-bg px-[10px] py-[6px] text-[15px] text-fg"
-                        value={editName}
-                        onChangeText={setEditName}
-                        autoFocus
-                        onSubmitEditing={commitEdit}
-                        onBlur={commitEdit}
-                        returnKeyType="done"
-                      />
+
+                    <Text className={`flex-1 text-[15px] ${item.isActive ? 'text-fg' : 'text-dim line-through'}`}>
+                      {item.name}
+                    </Text>
+
+                    {editMode ? (
+                      <TouchableOpacity onPress={() => requestDeletePart(item.id)} hitSlop={8}>
+                        <View className=" rounded-lg bg-red-600 py-[6px] px-[10px]">
+                          <Text className="text-[12px] font-bold text-white">삭제</Text>
+                        </View>
+                      </TouchableOpacity>
                     ) : (
-                      <Pressable className="flex-1" onPress={() => startEdit(item.id, item.name)}>
-                        <Text
-                          className={`text-[15px] ${item.isActive ? 'text-fg' : 'text-dim line-through'}`}
-                        >
-                          {item.name}
-                        </Text>
-                      </Pressable>
+                      <Switch
+                        value={item.isActive}
+                        onValueChange={(v) => setPartActive(item.id, v)}
+                        trackColor={{ false: Colors.gray1Color, true: Colors.mainColor }}
+                        thumbColor={Colors.whiteColor}
+                      />
                     )}
-                    <Switch
-                      value={item.isActive}
-                      onValueChange={(v) => setPartActive(item.id, v)}
-                      trackColor={{ false: Colors.line, true: Colors.accent }}
-                      thumbColor={Colors.text}
-                    />
                   </View>
                 </ScaleDecorator>
               );
@@ -160,7 +144,7 @@ export default function SettingScreen() {
               value={newName}
               onChangeText={setNewName}
               placeholder="새 부위 추가"
-              placeholderTextColor={Colors.dim}
+              placeholderTextColor={Colors.disabledColor}
               onSubmitEditing={onAdd}
               returnKeyType="done"
             />
@@ -171,115 +155,6 @@ export default function SettingScreen() {
           <Text className="mt-[12px] text-[12px] text-dim">
             끄면 기록 화면에서 숨겨져요. 과거 기록은 유지돼요.
           </Text>
-        </View>
-        <Text className="mb-[8px] mt-[24px] text-[13px] text-sub">주간 목표</Text>
-        <View className="rounded-[16px] bg-card p-[16px]">
-          <View className="flex-row items-center gap-[10px]">
-            <TextInput
-              className="w-[64px] rounded-[8px] bg-bg px-[10px] py-[8px] text-center text-[15px] text-fg"
-              value={goalCountInput}
-              onChangeText={setGoalCountInput}
-              placeholder="1"
-              placeholderTextColor={Colors.dim}
-              keyboardType="number-pad"
-              returnKeyType="done"
-            />
-            <Text className="text-[15px] text-fg">회 / 주</Text>
-            <View className="flex-1" />
-            <Text className="text-[13px] text-sub">매주 반복</Text>
-            <Switch
-              value={goalRecurring}
-              onValueChange={setGoalRecurring}
-              trackColor={{ false: Colors.line, true: Colors.accent }}
-              thumbColor={Colors.text}
-            />
-          </View>
-          
-          <Pressable
-            className="mt-[14px] items-center rounded-[10px] bg-bg py-[10px]"
-            onPress={onSaveGoal}
-          >
-            <Text className="text-[14px] font-medium text-fg">저장</Text>
-          </Pressable>
-          {goal && (
-            <Text className="mt-[10px] text-[12px] text-dim">
-              {goal.recurring
-                ? `현재 목표: 주 ${goal.targetCount}회 · 매주 반복`
-                : `현재 목표: 이번 주 ${goal.targetCount}회 (반복 안 함)`}
-            </Text>
-          )}
-        </View>
-
-        <Text className="mb-[8px] mt-[24px] text-[13px] text-sub">운동 싸이클</Text>
-        <View className="rounded-[16px] bg-card p-[16px]">
-          {cycleSteps.length === 0 && (
-            <Text className="text-[13px] text-dim">
-              분할 순서를 등록하면 홈 화면에서 오늘 할 차례를 알려드려요.
-            </Text>
-          )}
-          {cycleSteps.map((step, index) => (
-            <View
-              key={step.id}
-              className={index > 0 ? 'mt-[16px] border-t border-line pt-[16px]' : ''}
-            >
-              <View className="flex-row items-center gap-[8px]">
-                <Text className="w-[16px] text-[13px] text-dim">{index + 1}</Text>
-                <View className="flex-1 rounded-[8px] bg-bg px-[10px] py-[8px]">
-                  <Text className={`text-[15px] ${step.label ? 'text-fg' : 'text-dim'}`}>
-                    {step.label || '아래에서 부위를 선택하세요'}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => moveCycleStep(step.id, -1)}
-                  disabled={index === 0}
-                  hitSlop={8}
-                >
-                  <Ionicons name="chevron-up" size={18} color={index === 0 ? Colors.line : Colors.sub} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => moveCycleStep(step.id, 1)}
-                  disabled={index === cycleSteps.length - 1}
-                  hitSlop={8}
-                >
-                  <Ionicons
-                    name="chevron-down"
-                    size={18}
-                    color={index === cycleSteps.length - 1 ? Colors.line : Colors.sub}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => removeCycleStep(step.id)} hitSlop={8}>
-                  <Ionicons name="close" size={18} color={Colors.dim} />
-                </TouchableOpacity>
-              </View>
-              <View className="mt-[10px] flex-row flex-wrap gap-[8px]">
-                {parts
-                  .filter((p) => p.isActive)
-                  .map((part) => (
-                    <Chip
-                      key={part.id}
-                      label={part.name}
-                      small
-                      selected={step.bodyPartIds.includes(part.id)}
-                      onPress={() => toggleCycleStepPart(step.id, part.id)}
-                    />
-                  ))}
-              </View>
-            </View>
-          ))}
-          <Pressable
-            className="mt-[14px] items-center rounded-[10px] border border-dashed border-line py-[10px]"
-            onPress={addCycleStep}
-          >
-            <Text className="text-[14px] font-medium text-sub">+ 단계 추가</Text>
-          </Pressable>
-          <Pressable className="mt-[10px] items-center rounded-[10px] bg-bg py-[10px]" onPress={onSaveCycle}>
-            <Text className="text-[14px] font-medium text-fg">저장</Text>
-          </Pressable>
-          {cycle && cycle.steps.length > 0 && (
-            <Text className="mt-[10px] text-[12px] text-dim">
-              다음 차례: {cycle.steps[cycle.currentIndex]?.label}
-            </Text>
-          )}
         </View>
 
         <Text className="mb-[8px] mt-[24px] text-[13px] text-sub">계정</Text>
@@ -325,6 +200,16 @@ export default function SettingScreen() {
         contents="모든 단계에 부위를 하나 이상 선택해 주세요"
         okLabel="확인"
         onOk={() => setInvalidCycleAlertVisible(false)}
+      />
+      <AlertModal
+        visible={!!deleteTargetId}
+        title="부위 삭제"
+        contents="목록에서 사라지고 지난 기록은 그대로 남아요. 같은 이름으로 다시 추가하면 되살릴 수 있어요."
+        okLabel="삭제"
+        cancelLabel="취소"
+        danger
+        onOk={confirmDeletePart}
+        onCancel={cancelDeletePart}
       />
       <AlertModal
         visible={resetConfirmVisible}

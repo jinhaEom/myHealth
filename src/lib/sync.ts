@@ -8,6 +8,7 @@ interface ServerPart {
   sort_order: number;
   is_active: boolean;
   updated_at: string;
+  deleted_at: string | null;
 }
 
 interface ServerLog {
@@ -55,7 +56,7 @@ async function pullMerge() {
   // RLS가 내 행만 돌려주므로 user_id 필터는 생략
   // 목표(goals)는 기기 로컬 전용이라 여기서 다루지 않는다 — 로그아웃하면 사라짐
   const [partsRes, logsRes, logPartsRes] = await Promise.all([
-    supabase.from('body_parts').select('id, name, sort_order, is_active, updated_at'),
+    supabase.from('body_parts').select('id, name, sort_order, is_active, updated_at, deleted_at'),
     supabase
       .from('workout_logs')
       .select('id, log_date, duration_min, intensity, condition, memo, updated_at, deleted_at'),
@@ -95,13 +96,15 @@ async function pullMerge() {
       }
       if (!local) {
         db.runSync(
-          'INSERT INTO body_parts (id, name, sort_order, is_active, updated_at, synced) VALUES (?, ?, ?, ?, ?, 1)',
-          sp.id, sp.name, sp.sort_order, sp.is_active ? 1 : 0, sp.updated_at,
+          `INSERT INTO body_parts (id, name, sort_order, is_active, updated_at, deleted_at, synced)
+           VALUES (?, ?, ?, ?, ?, ?, 1)`,
+          sp.id, sp.name, sp.sort_order, sp.is_active ? 1 : 0, sp.updated_at, sp.deleted_at,
         );
       } else if (later(sp.updated_at, local.updated_at)) {
         db.runSync(
-          'UPDATE body_parts SET name = ?, sort_order = ?, is_active = ?, updated_at = ?, synced = 1 WHERE id = ?',
-          sp.name, sp.sort_order, sp.is_active ? 1 : 0, sp.updated_at, sp.id,
+          `UPDATE body_parts SET name = ?, sort_order = ?, is_active = ?, updated_at = ?, deleted_at = ?, synced = 1
+           WHERE id = ?`,
+          sp.name, sp.sort_order, sp.is_active ? 1 : 0, sp.updated_at, sp.deleted_at, sp.id,
         );
       }
       // 로컬이 더 최신이면 그대로 두고 push에서 서버로 반영한다
@@ -143,8 +146,8 @@ async function pushUnsynced(userId: string) {
   const db = getDb();
 
   const parts = db.getAllSync<{
-    id: string; name: string; sort_order: number; is_active: number; updated_at: string;
-  }>('SELECT id, name, sort_order, is_active, updated_at FROM body_parts WHERE synced = 0');
+    id: string; name: string; sort_order: number; is_active: number; updated_at: string; deleted_at: string | null;
+  }>('SELECT id, name, sort_order, is_active, updated_at, deleted_at FROM body_parts WHERE synced = 0');
   if (parts.length > 0) {
     const { error } = await supabase.from('body_parts').upsert(
       parts.map((p) => ({
@@ -154,6 +157,7 @@ async function pushUnsynced(userId: string) {
         sort_order: p.sort_order,
         is_active: p.is_active === 1,
         updated_at: p.updated_at,
+        deleted_at: p.deleted_at,
       })),
     );
     if (error) throw error;

@@ -20,12 +20,12 @@ import DayCell from './DayCell';
 export default function MonthView() {
   const today = todayStr();
   const logs = useWorkoutStore((s) => s.logs);
-  const parts = useWorkoutStore((s) => s.parts);
+  const partNamesById = useWorkoutStore((s) => s.partNamesById);
   const [selected, setSelected] = useState(today);
   const { pager, expandGesture, gridHeightStyle, rowStyles, pillStyle, expanded } = useCalendar();
 
   const logsByDate = useMemo(() => new Map(logs.map((l) => [l.logDate, l])), [logs]);
-  const partNames = useMemo(() => new Map(parts.map((p) => [p.id, p.name])), [parts]);
+  const partNames = useMemo(() => new Map(Object.entries(partNamesById)), [partNamesById]);
 
   const renderMonth = ({ item }: { item: MonthPage }) => (
     <View style={{ width: PAGE_WIDTH }}>
@@ -61,13 +61,13 @@ export default function MonthView() {
       <View className="px-[16px]">
         <View className="mb-[10px] mt-[18px] flex-row items-center justify-between px-[4px]">
           <Pressable onPress={() => pager.goToMonth(-1)} hitSlop={10}>
-            <Ionicons name="chevron-back" size={20} color={Colors.sub} />
+            <Ionicons name="chevron-back" size={20} color={Colors.gray2Color} />
           </Pressable>
           <Text className="text-[17px] font-medium text-fg">
             {pager.current.year}년 {pager.current.month}월
           </Text>
           <Pressable onPress={() => pager.goToMonth(1)} hitSlop={10}>
-            <Ionicons name="chevron-forward" size={20} color={Colors.sub} />
+            <Ionicons name="chevron-forward" size={20} color={Colors.gray2Color} />
           </Pressable>
         </View>
 

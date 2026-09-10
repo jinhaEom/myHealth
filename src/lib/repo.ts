@@ -18,8 +18,16 @@ interface BodyPartRow {
 
 export function getBodyParts(): BodyPart[] {
   return getDb()
-    .getAllSync<BodyPartRow>('SELECT id, name, sort_order, is_active FROM body_parts ORDER BY sort_order, name')
+    .getAllSync<BodyPartRow>(
+      'SELECT id, name, sort_order, is_active FROM body_parts WHERE deleted_at IS NULL ORDER BY sort_order, name',
+    )
     .map((r) => ({ id: r.id, name: r.name, sortOrder: r.sort_order, isActive: r.is_active === 1 }));
+}
+
+/** 삭제 여부와 무관하게 id ,이름. 지난 기록에 연결된 (삭제된) 부위명을 복원할 때 씀 */
+export function getBodyPartNamesById(): Record<string, string> {
+  const rows = getDb().getAllSync<{ id: string; name: string }>('SELECT id, name FROM body_parts');
+  return Object.fromEntries(rows.map((r) => [r.id, r.name]));
 }
 
 interface LogRow {
@@ -107,15 +115,18 @@ export function softDeleteLog(logDate: string) {
   );
 }
 
-/** 추가 성공 시 새 부위의 id 반환, 중복 이름이면 null. 비활성 동명 칩은 되살림 */
+/** 추가 성공 시 부위 id 반환, 이미 있는(삭제되지 않은) 이름이면 null. 삭제됐던 동명 부위는 복구 */
 export function addBodyPart(name: string): string | null {
   const db = getDb();
-  const dup = db.getFirstSync<{ id: string; is_active: number }>(
-    'SELECT id, is_active FROM body_parts WHERE name = ?', name,
+  const dup = db.getFirstSync<{ id: string; deleted_at: string | null }>(
+    'SELECT id, deleted_at FROM body_parts WHERE name = ?', name,
   );
   if (dup) {
-    if (dup.is_active === 1) return null;
-    db.runSync('UPDATE body_parts SET is_active = 1, updated_at = ?, synced = 0 WHERE id = ?', nowIso(), dup.id);
+    if (dup.deleted_at === null) return null;
+    db.runSync(
+      'UPDATE body_parts SET deleted_at = NULL, is_active = 1, updated_at = ?, synced = 0 WHERE id = ?',
+      nowIso(), dup.id,
+    );
     return dup.id;
   }
   const max = db.getFirstSync<{ m: number | null }>('SELECT MAX(sort_order) AS m FROM body_parts');
@@ -127,19 +138,19 @@ export function addBodyPart(name: string): string | null {
   return id;
 }
 
-/** 이름 변경. 다른 칩과 중복이면 false */
-export function renameBodyPart(id: string, name: string): boolean {
-  const db = getDb();
-  const dup = db.getFirstSync<{ id: string }>('SELECT id FROM body_parts WHERE name = ? AND id != ?', name, id);
-  if (dup) return false;
-  db.runSync('UPDATE body_parts SET name = ?, updated_at = ?, synced = 0 WHERE id = ?', name, nowIso(), id);
-  return true;
-}
-
 export function setBodyPartActive(id: string, active: boolean) {
   getDb().runSync(
     'UPDATE body_parts SET is_active = ?, updated_at = ?, synced = 0 WHERE id = ?',
     active ? 1 : 0, nowIso(), id,
+  );
+}
+
+/** 소프트 삭제 — 지난 기록과의 연결은 유지하고 목록에서만 제외. 동일 이름으로 재추가하면 복구됨 */
+export function deleteBodyPart(id: string) {
+  const now = nowIso();
+  getDb().runSync(
+    'UPDATE body_parts SET deleted_at = ?, is_active = 0, updated_at = ?, synced = 0 WHERE id = ?',
+    now, now, id,
   );
 }
 

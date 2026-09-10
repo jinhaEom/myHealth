@@ -9,19 +9,25 @@ export const useSettings = () => {
   const insets = useSafeAreaInsets();
   const parts = useWorkoutStore((s) => s.parts);
   const addPart = useWorkoutStore((s) => s.addPart);
-  const renamePart = useWorkoutStore((s) => s.renamePart);
   const setPartActive = useWorkoutStore((s) => s.setPartActive);
+  const removePart = useWorkoutStore((s) => s.removePart);
   const movePart = useWorkoutStore((s) => s.movePart);
   const setParts = useWorkoutStore((s) => s.setParts);
   const resetAll = useWorkoutStore((s) => s.resetAll);
 
   const [newName, setNewName] = useState('');
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editName, setEditName] = useState('');
 
   const [duplicateAlertVisible, setDuplicateAlertVisible] = useState(false);
   const [invalidGoalAlertVisible, setInvalidGoalAlertVisible] = useState(false);
   const [resetConfirmVisible, setResetConfirmVisible] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+
+  const requestDeletePart = (id: string) => setDeleteTargetId(id);
+  const cancelDeletePart = () => setDeleteTargetId(null);
+  const confirmDeletePart = () => {
+    if (deleteTargetId) removePart(deleteTargetId);
+    setDeleteTargetId(null);
+  };
 
   const logout = useAuthStore((s) => s.logout);
 
@@ -107,17 +113,16 @@ export const useSettings = () => {
     insets,
     parts,
     addPart,
-    renamePart,
     setPartActive,
     movePart,
     setParts,
     resetAll,
+    deleteTargetId,
+    requestDeletePart,
+    cancelDeletePart,
+    confirmDeletePart,
     newName,
     setNewName,
-    editingId,
-    setEditingId,
-    editName,
-    setEditName,
     logout,
     goal,
     goalCountInput,

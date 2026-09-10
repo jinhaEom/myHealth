@@ -116,7 +116,7 @@ export default function RecordScreen() {
             {formatKorean(logDate)} {existing ? '수정' : '기록'}
           </Text>
           <Pressable onPress={() => router.back()} hitSlop={8}>
-            <Ionicons name="close" size={24} color={Colors.sub} />
+            <Ionicons name="close" size={24} color={Colors.gray2Color} />
           </Pressable>
         </View>
 
@@ -145,7 +145,7 @@ export default function RecordScreen() {
                 value={newName}
                 onChangeText={setNewName}
                 placeholder="새 부위 이름"
-                placeholderTextColor={Colors.dim}
+                placeholderTextColor={Colors.disabledColor}
                 autoFocus
                 onSubmitEditing={onAddPart}
                 returnKeyType="done"
@@ -175,9 +175,9 @@ export default function RecordScreen() {
               step={DURATION_STEP}
               value={Math.min(duration, DURATION_SLIDER_MAX)}
               onValueChange={applyDuration}
-              minimumTrackTintColor={Colors.text}
-              maximumTrackTintColor={Colors.line}
-              thumbTintColor={Colors.text}
+              minimumTrackTintColor={Colors.whiteColor}
+              maximumTrackTintColor={Colors.gray1Color}
+              thumbTintColor={Colors.whiteColor}
             />
             <View className="flex-row items-center gap-[4px]">
               <TextInput
@@ -215,7 +215,7 @@ export default function RecordScreen() {
             value={memo}
             onChangeText={setMemo}
             placeholder="한 줄 메모 (선택)"
-            placeholderTextColor={Colors.dim}
+            placeholderTextColor={Colors.disabledColor}
             returnKeyType="done"
           />
         </ScrollView>
