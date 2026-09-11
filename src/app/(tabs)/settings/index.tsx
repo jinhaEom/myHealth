@@ -1,9 +1,10 @@
 import { AlertModal } from '@/components/AlertModal';
 import { Colors } from '@/constants/colors';
 import { BodyPart } from '@/lib/types';
+import { useAdsStore } from '@/store/useAdsStore';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Pressable, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Pressable, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import {
   NestableDraggableFlatList,
   NestableScrollContainer,
@@ -50,6 +51,11 @@ export default function SettingScreen() {
     invalidCycleAlertVisible,
     setInvalidCycleAlertVisible,
   } = useSettings();
+
+  const adsRemoved = useAdsStore((s) => s.adsRemoved);
+  const purchasing = useAdsStore((s) => s.purchasing);
+  const purchaseRemoveAds = useAdsStore((s) => s.purchaseRemoveAds);
+  const restorePurchases = useAdsStore((s) => s.restorePurchases);
 
   const [editMode, setEditMode] = useState(false);
 
@@ -169,6 +175,33 @@ export default function SettingScreen() {
           <TouchableOpacity onPress={onLogout} className="flex-row items-center justify-between ">
             <Text className="text-[15px] text-dim">로그아웃</Text>
           </TouchableOpacity>
+        </View>
+        <Text className="mb-[8px] mt-[24px] text-[13px] text-sub">광고</Text>
+        <View className="rounded-[16px] bg-card p-[16px]">
+          {adsRemoved ? (
+            <View className="flex-row items-center justify-between">
+              <Text className="text-[15px] text-fg">광고가 제거됐어요</Text>
+              <Ionicons name="checkmark-circle" size={18} color={Colors.mainColor} />
+            </View>
+          ) : (
+            <>
+              <TouchableOpacity
+                onPress={purchaseRemoveAds}
+                disabled={purchasing}
+                className="flex-row items-center justify-between"
+              >
+                <Text className="text-[15px] text-fg">광고 제거</Text>
+                {purchasing ? (
+                  <ActivityIndicator size="small" color={Colors.gray2Color} />
+                ) : (
+                  <Ionicons name="chevron-forward" size={16} color={Colors.gray2Color} />
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity onPress={restorePurchases} className="mt-[12px]">
+                <Text className="text-[13px] text-sub">구매 복원</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
         {/* ── 앱 정보 ── */}
         <Text className="mb-[8px] mt-[24px] text-[13px] text-sub">앱 정보</Text>

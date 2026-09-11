@@ -3,6 +3,7 @@ import '@/global.css';
 import { Colors } from '@/constants/colors';
 import { createSessionFromUrl } from '@/lib/socialAuth';
 import { syncAll } from '@/lib/sync';
+import { useAdsStore } from '@/store/useAdsStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useWorkoutStore } from '@/store/useWorkoutStore';
 import * as Linking from 'expo-linking';
@@ -10,15 +11,19 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import mobileAds from 'react-native-google-mobile-ads';
 
 export default function RootLayout() {
   const loadAll = useWorkoutStore((s) => s.loadAll);
   const initializeAuth = useAuthStore((s) => s.initialize);
+  const initAds = useAdsStore((s) => s.init);
 
   useEffect(() => {
     loadAll();
     initializeAuth();
-  }, [loadAll, initializeAuth]);
+    mobileAds().initialize();
+    initAds();
+  }, [loadAll, initializeAuth, initAds]);
 
   const userId = useAuthStore((s) => s.user?.id);
   useEffect(() => {

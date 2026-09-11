@@ -1,3 +1,4 @@
+import { AdBanner } from '@/components/AdBanner';
 import { Segmented } from '@/components/Segmented';
 import { useState } from 'react';
 import { View } from 'react-native';
@@ -15,6 +16,9 @@ export default function CalendarScreen() {
         <Segmented options={['캘린더', '히트맵']} value={mode} onChange={setMode} />
       </View>
       {mode === 0 ? <MonthView /> : <HeatmapView />}
+      <View style={{ paddingBottom: insets.bottom }}>
+        <AdBanner />
+      </View>
     </View>
   );
 }

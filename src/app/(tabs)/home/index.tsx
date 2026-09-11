@@ -1,3 +1,4 @@
+import { AdBanner } from '@/components/AdBanner';
 import { WeekGrass } from '@/components/WeekGrass';
 import { Colors } from '@/constants/colors';
 import { BottomTabInset } from '@/constants/constant';
@@ -55,13 +56,16 @@ export default function HomeScreen() {
             <View className="mt-[24px] rounded-[16px] bg-card p-[16px] flex-1">
               <View className="flex-row justify-between">
                 <Text className="text-[13px] text-sub">오늘 할 운동</Text>
-                <TouchableOpacity onPress={() => setIsCycleModalOpen(true)}>
-                  <Ionicons name="pencil" size={16} color={Colors.disabledColor} />
+                <TouchableOpacity
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                  onPress={() => setIsCycleModalOpen(true)}
+                >
+                  <Ionicons name="pencil" size={16} color={Colors.gray2Color} />
                 </TouchableOpacity>
               </View>
               <Text className="mt-[6px] text-[28px] font-semibold text-fg">{currentCycleStep.label}</Text>
               {nextCycleStep && (
-                <Text className="mt-[6px] text-[12px] text-dim">다음 차례: {nextCycleStep.label}</Text>
+                <Text className="mt-[6px] text-[12px] text-sub">다음 차례: {nextCycleStep.label}</Text>
               )}
             </View>
           ) : (
@@ -70,7 +74,7 @@ export default function HomeScreen() {
               onPress={() => setIsCycleModalOpen(true)}
             >
               <Text className="text-[13px] text-sub">운동 싸이클을 등록해보세요</Text>
-              <Ionicons name="chevron-forward" size={16} color={Colors.disabledColor} />
+              <Ionicons name="chevron-forward" size={16} color={Colors.gray2Color} />
             </Pressable>
           )}
         </View>
@@ -82,8 +86,11 @@ export default function HomeScreen() {
               <Text className="text-[13px] text-sub">
                 주간 목표{goalProgress.recurring ? ' · 매주 반복' : ''}
               </Text>
-              <TouchableOpacity onPress={() => setIsGoalModalOpen(true)}>
-                <Ionicons name="pencil" size={16} color={Colors.disabledColor} />
+              <TouchableOpacity
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                onPress={() => setIsGoalModalOpen(true)}
+              >
+                <Ionicons name="pencil" size={16} color={Colors.gray2Color} />
               </TouchableOpacity>
             </View>
             <View className="flex-row items-center justify-between">
@@ -101,10 +108,10 @@ export default function HomeScreen() {
         ) : (
           <Pressable
             className="mt-[24px] flex-row items-center justify-between rounded-[16px] bg-card p-[16px]"
-            onPress={() => setIsCycleModalOpen(true)}
+            onPress={() => setIsGoalModalOpen(true)}
           >
             <Text className="text-[13px] text-sub">주간 목표를 설정해보세요</Text>
-            <Ionicons name="chevron-forward" size={16} color={Colors.disabledColor} />
+            <Ionicons name="chevron-forward" size={16} color={Colors.gray2Color} />
           </Pressable>
         )}
 
@@ -129,6 +136,7 @@ export default function HomeScreen() {
         visible={isGoalModalOpen}
         onClose={() => setIsGoalModalOpen(false)}
       />
+      <AdBanner />
       <View
         className="px-[16px] pt-[8px]"
         style={{ paddingBottom: Platform.OS === 'ios' ? insets.bottom + BottomTabInset : 16 }}
